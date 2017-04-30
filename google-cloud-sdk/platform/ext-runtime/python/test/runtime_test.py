@@ -29,9 +29,6 @@ ROOT = comm.RuntimeDefinitionRoot(ROOT_DIR)
 
 class FakeExecutionEnvironment(ext_runtime.DefaultExecutionEnvironment):
 
-    def CanPrompt(self):
-        return True
-
     def PromptResponse(self, message):
         return 'my_entrypoint'
 
@@ -294,7 +291,7 @@ class RuntimeTests(testutil.TestBase):
             'Dockerfile',
             self.DOCKERFILE_PREAMBLE +
             self.DOCKERFILE_VIRTUALENV_TEMPLATE.format(
-                python_version='3.5') +
+                python_version='3.4') +
             self.DOCKERFILE_INSTALL_APP +
             'CMD run_me_some_python!\n')
 
@@ -313,7 +310,7 @@ class RuntimeTests(testutil.TestBase):
             'Dockerfile',
             self.DOCKERFILE_PREAMBLE +
             self.DOCKERFILE_VIRTUALENV_TEMPLATE.format(
-                python_version='3.5') +
+                python_version='3.4') +
             self.DOCKERFILE_INSTALL_APP +
             'CMD run_me_some_python!\n')
 
@@ -362,8 +359,7 @@ class RuntimeTests(testutil.TestBase):
             runtime='python',
             entrypoint='run_me_some_python!',
             runtime_config=dict(python_version='invalid_version'))
-        self.assertRaises(testutil.InvalidRuntime,
-                          self.generate_config_data, appinfo=config)
+        self.assertIsNone(self.generate_config_data(appinfo=config))
 
     def test_python_custom_runtime(self):
         self.write_file('test.py', 'test file')
@@ -399,22 +395,11 @@ class RuntimeTests(testutil.TestBase):
                          {'Dockerfile', '.dockerignore'})
 
     def test_python_custom_runtime_field(self):
-        """Verify that a runtime field of "custom" works."""
+        # verify that a runtime field of "custom" works.
         self.write_file('test.py', 'test file')
         config = testutil.AppInfoFake(runtime='custom',
                                       entrypoint='my_entrypoint')
         self.assertTrue(self.generate_configs(appinfo=config, deploy=True))
-
-    def test_python_label(self):
-        """Test that a LABEL directive is added to the Dockerfile"""
-        self.write_file('test.py', 'test file')
-        config = testutil.AppInfoFake(
-            runtime='python',
-            entrypoint='run_me_some_python!',
-            runtime_config=dict(python_version='3'))
-        cfg_files = self.generate_config_data(appinfo=config, deploy=True)
-        dockerfile = [f for f in cfg_files if f.filename == 'Dockerfile'][0]
-        self.assertIn('LABEL python_version=python3.5\n', dockerfile.contents)
 
     # NOTE: this test is also irrelevant to the runtime, convert it to
     # something appropriate to the framework.

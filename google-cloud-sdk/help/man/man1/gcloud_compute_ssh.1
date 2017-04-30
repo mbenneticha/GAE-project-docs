@@ -11,7 +11,7 @@ gcloud compute ssh \- SSH into a virtual machine instance
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute ssh\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-command\fR=\fICOMMAND\fR] [\fB\-\-container\fR=\fICONTAINER\fR] [\fB\-\-dry\-run\fR] [\fB\-\-force\-key\-file\-overwrite\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-flag\fR=\fISSH_FLAG\fR] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-strict\-host\-key\-checking\fR=\fISTRICT_HOST_KEY_CHECKING\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fISSH_ARGS\fR\ ...]
+\f5gcloud compute ssh\fR [\fIUSER\fR@]\fIINSTANCE\fR [\fB\-\-command\fR=\fICOMMAND\fR] [\fB\-\-container\fR=\fICONTAINER\fR] [\fB\-\-dry\-run\fR] [\fB\-\-plain\fR] [\fB\-\-ssh\-flag\fR=\fISSH_FLAG\fR] [\fB\-\-ssh\-key\-file\fR=\fISSH_KEY_FILE\fR] [\fB\-\-strict\-host\-key\-checking\fR=\fISTRICT_HOST_KEY_CHECKING\fR] [\fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR] [\-\-\ \fISSH_ARGS\fR\ ...]
 
 
 
@@ -46,7 +46,9 @@ Flags and positionals passed to the underlying ssh implementation.
 .RE
 .sp
 The '\-\-' argument must be specified between gcloud specific args on the left
-and SSH_ARGS on the right. Example:
+and SSH_ARGS on the right. IMPORTANT: previously, commands allowed the omission
+of the \-\-, and unparsed arguments were treated as implementation args. This
+usage is being deprecated and will be removed in March 2017. Example:
 
 .RS 2m
 $ gcloud compute ssh example\-instance \-\-zone us\-central1\-a \-\- \-vvv \e
@@ -71,19 +73,11 @@ This only applies to virtual machines that are using a Google container virtual
 machine image. For more information, see
 https://cloud.google.com/compute/docs/containers
 
+
 .TP 2m
 \fB\-\-dry\-run\fR
 If provided, prints the command that would be run to standard out instead of
 executing it.
-
-.TP 2m
-\fB\-\-force\-key\-file\-overwrite\fR
-If enabled gcloud will regenerate and overwrite the files associated with a
-broken SSH key without asking for confirmation in both interactive and
-non\-interactive environment.
-
-If disabled gcloud will not attempt to regenerate the files associated with a
-broken SSH key and fail in both interactive and non\-interactive environment.
 
 .TP 2m
 \fB\-\-plain\fR

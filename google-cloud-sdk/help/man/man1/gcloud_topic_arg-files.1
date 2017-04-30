@@ -5,16 +5,16 @@
 
 .SH "NAME"
 .HP
-gcloud topic arg\-files \- supplementary help for arg\-files to be used with \fBgcloud firebase test\fR
+gcloud topic arg\-files \- supplementary help for arg\-files to be used with \fBgcloud test\fR
 
 
 
 .SH "DESCRIPTION"
 
-Supplementary help for arg\-files to be used with \fBgcloud firebase test\fR.
+Supplementary help for arg\-files to be used with \fBgcloud test\fR.
 
-All \fBgcloud firebase test android run\fR arguments may be specified by flags
-on the command line and/or via a YAML\-formatted \fIARG_FILE\fR. The optional,
+All \fBgcloud test android run\fR arguments may be specified by flags on the
+command line and/or via a YAML\-formatted \fIARG_FILE\fR. The optional,
 positional ARG_SPEC argument on the command line is used to specify a single
 \fIARG_FILE\fR:\fIARG_GROUP_NAME\fR pair, where \fIARG_FILE\fR is the path to
 the YAML argument file, and \fIARG_GROUP_NAME\fR is the name of the argument
@@ -40,23 +40,28 @@ arg\-group2:
 List arguments may be specified within square brackets:
 
 .RS 2m
-directories\-to\-pull: [/sdcard/dir1, /data/dir2]
+device\-ids: [Nexus5, Nexus6, Nexus9]
 .RE
 
 or by using the alternate YAML list notation with one dash per list item:
 
 .RS 2m
-directories\-to\-pull:
-  \- /sdcard/dir1
-  \- /data/dir2
+device\-ids:
+  \- Nexus5
+  \- Nexus6
+  \- Nexus9
 .RE
 
 If a list argument only contains a single value, you may omit the square
 brackets:
 
 .RS 2m
-directories\-to\-pull: /sdcard/dir1
+device\-ids: Nexus9
 .RE
+
+Note that while the command\-line flags support both singular and plural forms
+of each list\-style argument (e.g. either \-\-device\-id or \-\-device\-ids),
+argument files only support the plural forms.
 
 Composition
 
@@ -83,7 +88,7 @@ stored in a file named excelsior_args.yaml:
 
 .RS 2m
 # Run a quick 'robo' test on the 'Excelsior' app for
-# 90 seconds using only the default Test Lab device.
+# 90 seconds using only the default virtual device.
 quick\-robo\-test:
   app: path/to/excelsior.apk
   type: robo
@@ -95,44 +100,7 @@ quick\-robo\-test:
 To invoke this test, run:
 
 .RS 2m
-$ gcloud firebase test android run \e
-    excelsior_args.yaml:quick\-robo\-test
-.RE
-
-To select which device(s) you wish to test against in an argument file, use
-\fBdevice:\fR to specify one or more devices, with each device having one or
-more dimensions. For example, to specify the LG G3 device in the Chinese locale
-and with landscape orientation, use:
-
-.RS 2m
-single\-device\-group:
-  device: [{model: g3, orientation: landscape, locale: zh}]
-.RE
-
-To specify multiple devices, use any of the following equivalent YAML formats:
-
-.RS 2m
-multi\-device\-group1:
-  device: [{model: flo}, {model: g3, version: 19, locale: zh}, {model: mako, version: 21}]
-.RE
-
-.RS 2m
-multi\-device\-group2:
-  device:
-    \- {model: flo}
-    \- {model: g3, version: 19, locale: zh}
-    \- {model: mako, version: 21}
-.RE
-
-.RS 2m
-multi\-device\-group3:
-  device:
-    \- model: flo
-    \- model: g3
-      version: 19
-      locale: zh
-    \- model: mako
-      version: 21
+$ gcloud beta test android run excelsior_args.yaml:quick\-robo\-test
 .RE
 
 If your app has a login screen, or has additional UI elements which require
@@ -153,17 +121,16 @@ robo\-test\-with\-login:
 .RE
 
 Assuming the above YAML text is appended to the arg\-file named
-excelsior_args.yaml, you may invoke the test by running:
+excelsior_args.yaml, you may invode the test by running:
 
 .RS 2m
-$ gcloud firebase test android run \e
+$ gcloud beta test android run \e
     excelsior_args.yaml:robo\-test\-with\-login
 .RE
 
 Here is a slightly more complicated example which demonstrates composition of
-argument groups using the legacy device dimension arguments (\fBdevice:\fR is
-now the preferred way to specify test devices). Assume the following YAML text
-is appended to the arg\-file shown above named excelsior_args.yaml:
+argument groups. Assume the following YAML text is appended to the arg\-file
+shown above named excelsior_args.yaml:
 
 .RS 2m
 # Specify some unit tests to be run against a test matrix
@@ -174,7 +141,7 @@ unit\-tests:
   app: path/to/excelsior.apk
   test: path/to/excelsior\-test.apk  # the unit tests
   timeout: 10m
-  device\-ids: NexusLowRes
+  device\-ids: Nexus6
   include: [supported\-versions, supported\-locales]
 .RE
 
@@ -191,15 +158,15 @@ supported\-locales:
 To invoke this test matrix, run:
 
 .RS 2m
-$ gcloud firebase test android run excelsior_args.yaml:unit\-tests
+$ gcloud beta test android run excelsior_args.yaml:unit\-tests
 .RE
 
 To run these unit tests with the same locales and os\-version\-ids, but
 substituting a sampling of three physical Android devices instead of the single
-virtual NexusLowRes device, run:
+virtual Nexus6 device, run:
 
 .RS 2m
-$ gcloud firebase test android run excelsior_args.yaml:unit\-tests \e
+$ gcloud beta test android run excelsior_args.yaml:unit\-tests \e
     \-\-device\-ids shamu,htc_m8,g3
 .RE
 

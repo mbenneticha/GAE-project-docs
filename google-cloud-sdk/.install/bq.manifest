@@ -165,9 +165,7 @@ platform/bq/third_party/socks/__init__.py
 platform/bq/third_party/socks/LICENSE
 platform/bq/third_party/uritemplate/
 platform/bq/third_party/uritemplate/__init__.py
-platform/bq/third_party/uritemplate/api.py
-platform/bq/third_party/uritemplate/template.py
-platform/bq/third_party/uritemplate/variable.py
+platform/bq/third_party/uritemplate/uritemplate.py
 platform/bq/third_party/uritemplate/LICENSE
 platform/bq/third_party/yaml/
 platform/bq/third_party/yaml/__init__.py

@@ -94,7 +94,7 @@ from gslib.wildcard_iterator import CreateWildcardIterator
 
 
 _SYNOPSIS = """
-  gsutil rsync [-a] [-c] [-C] [-d] [-e] [-n] [-p] [-r] [-U] [-x] src_url dst_url
+  gsutil rsync [-c] [-C] [-d] [-e] [-n] [-p] [-r] [-U] [-x] src_url dst_url
 """
 
 _DETAILED_HELP_TEXT = ("""
@@ -329,12 +329,6 @@ _DETAILED_HELP_TEXT = ("""
      perform partial overwrites.
 
 <B>OPTIONS</B>
-  -a canned_acl Sets named canned_acl when uploaded objects created. See
-                "gsutil help acls" for further details. Note that rsync will
-                decide whether or not to perform a copy based only on object size
-                and modification time, not current ACL state. Also see the -p
-                option below.
-
   -c            Causes the rsync command to compute and compare checksums
                 (instead of comparing mtime) for files if the size of source and
                 destination as well as mtime (if available) match. This option
@@ -1091,16 +1085,7 @@ class _SeekAheadDiffIterator(object):
 
   def __iter__(self):
     for diff_to_apply in self.cloned_diff_iterator:
-      bytes_to_copy = diff_to_apply.copy_size or 0
-      if (diff_to_apply.diff_action == _DiffAction.MTIME_SRC_TO_DST or
-          diff_to_apply.diff_action == _DiffAction.POSIX_SRC_TO_DST):
-        # Assume MTIME_SRC_TO_DST and POSIX_SRC_TO_DST are metadata-only
-        # copies. However, if the user does not have OWNER permission on
-        # an object, the data must be re-sent, and this function will
-        # underestimate the amount of bytes that rsync must copy.
-        bytes_to_copy = 0
-
-      yield SeekAheadResult(data_bytes=bytes_to_copy)
+      yield SeekAheadResult(data_bytes=diff_to_apply.copy_size or 0)
 
 
 class _AvoidChecksumAndListingDiffIterator(_DiffIterator):
@@ -1122,9 +1107,6 @@ class _AvoidChecksumAndListingDiffIterator(_DiffIterator):
     self.compute_file_checksums = False
     self.delete_extras = initialized_diff_iterator.delete_extras
     self.recursion_requested = initialized_diff_iterator.delete_extras
-    # TODO: Add a test that mocks the appropriate values in RsyncFunc and
-    # ensure that running this iterator succeeds.
-    self.preserve_posix = False
     # This iterator shouldn't output any log messages.
     self.logger = logging.getLogger('dummy')
     self.base_src_url = initialized_diff_iterator.base_src_url
@@ -1331,7 +1313,7 @@ class RsyncCommand(Command):
       usage_synopsis=_SYNOPSIS,
       min_args=2,
       max_args=2,
-      supported_sub_args='a:cCdenpPrRUx:',
+      supported_sub_args='cCdenpPrRUx:',
       file_url_ok=True,
       provider_url_ok=False,
       urls_start_arg=0,
@@ -1464,16 +1446,9 @@ class RsyncCommand(Command):
     self.skip_unsupported_objects = False
     # self.recursion_requested is initialized in command.py (so it can be
     # checked in parent class for all commands).
-    canned_acl = None
-    # canned_acl is handled by a helper function in parent
-    # Command class, so save in Command state rather than CopyHelperOpts.
-    self.canned = None
 
     if self.sub_opts:
       for o, a in self.sub_opts:
-        if o == '-a':
-          canned_acl = a
-          self.canned = True
         if o == '-c':
           self.compute_file_checksums = True
         # Note: In gsutil cp command this is specified using -c but here we use
@@ -1504,10 +1479,6 @@ class RsyncCommand(Command):
             self.exclude_pattern = re.compile(a)
           except re.error:
             raise CommandException('Invalid exclude filter (%s)' % a)
-    if self.preserve_acl and canned_acl:
-      raise CommandException(
-          'Specifying both the -p and -a options together is invalid.')
     return CreateCopyHelperOpts(
-        canned_acl=canned_acl,
         preserve_acl=self.preserve_acl,
         skip_unsupported_objects=self.skip_unsupported_objects)

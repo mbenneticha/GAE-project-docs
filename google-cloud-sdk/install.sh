@@ -13,6 +13,7 @@ if [ -z "$CLOUDSDK_PYTHON" ]; then
     echo "to the location of your Python executable."
     exit 1
   fi
+  CLOUDSDK_PYTHON="python"
 fi
 
 

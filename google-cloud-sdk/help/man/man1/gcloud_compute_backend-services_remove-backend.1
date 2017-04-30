@@ -11,7 +11,7 @@ gcloud compute backend\-services remove\-backend \- remove a backend from a back
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud compute backend\-services remove\-backend\fR \fIBACKEND_SERVICE_NAME\fR \fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR [\fB\-\-global\fR\ |\ \fB\-\-region\fR=\fIREGION\fR] [\fB\-\-instance\-group\-region\fR=\fIINSTANCE_GROUP_REGION\fR\ |\ \fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR\ |\ \fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud compute backend\-services remove\-backend\fR \fINAME\fR \fB\-\-instance\-group\fR=\fIINSTANCE_GROUP\fR [\fB\-\-instance\-group\-region\fR=\fIINSTANCE_GROUP_REGION\fR\ |\ \fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR\ |\ \fB\-\-zone\fR=\fIZONE\fR] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -30,7 +30,7 @@ compute backend\-services edit'.
 
 .RS 2m
 .TP 2m
-\fIBACKEND_SERVICE_NAME\fR
+\fINAME\fR
 The name of the backend service.
 
 
@@ -54,20 +54,6 @@ At most one of these may be specified:
 
 .RS 2m
 .TP 2m
-\fB\-\-global\fR
-If provided, it is assumed the backend service is global.
-
-.TP 2m
-\fB\-\-region\fR=\fIREGION\fR
-The region of the backend service to operate on. Overrides the default
-\fBcompute/region\fR property value for this command invocation.
-
-.RE
-.sp
-At most one of these may be specified:
-
-.RS 2m
-.TP 2m
 \fB\-\-instance\-group\-region\fR=\fIINSTANCE_GROUP_REGION\fR
 The region of the instance group to remove from the backend service. If not
 specified, you will be prompted to select a region.
@@ -77,9 +63,6 @@ A list of regions can be fetched by running:
 .RS 2m
 $ gcloud compute regions list
 .RE
-
-Overrides the default \fBcompute/region\fR property value for this command
-invocation.
 
 .TP 2m
 \fB\-\-instance\-group\-zone\fR=\fIINSTANCE_GROUP_ZONE\fR
@@ -92,14 +75,10 @@ A list of zones can be fetched by running:
 $ gcloud compute zones list
 .RE
 
-Overrides the default \fBcompute/zone\fR property value for this command
-invocation.
-
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
 The zone of the instance group to remove from the backend service. DEPRECATED,
-use \-\-instance\-group\-zone flag instead. Overrides the default
-\fBcompute/zone\fR property value for this command invocation.
+use \-\-instance\-group\-zone flag instead.
 
 
 .RE

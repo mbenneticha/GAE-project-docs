@@ -4,7 +4,6 @@ import mock
 import os
 import re
 import sys
-import stat
 import shutil
 import tempfile
 import textwrap
@@ -89,136 +88,28 @@ class RuntimeTests(testutil.TestBase):
         self.assertEqual({f.filename for f in cfg_files},
                          {'Dockerfile', '.dockerignore'})
 
-    def _validate_docker_files_for_npm(self):
+    def test_node_js_package_json(self):
+        self.write_file('foo.js', 'bogus contents')
+        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
+        self.generate_configs()
+        self.assert_file_exists_with_contents(
+            'app.yaml',
+            self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
+
+        self.generate_configs(deploy=True)
+
         base_dockerfile = self.read_dist_file('data', 'Dockerfile')
         self.assert_file_exists_with_contents(
             'Dockerfile',
             base_dockerfile + 'COPY . /app/\n' +
-            self.read_dist_file('data', 'npm-package-json-install') +
+            self.read_dist_file('data', 'package-json-install') +
             'CMD npm start\n')
         self.assert_file_exists_with_contents(
             '.dockerignore',
             self.read_dist_file('data', 'dockerignore'))
-
-    def test_node_js_package_json_npm(self):
-        self.write_file('foo.js', 'bogus contents')
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.generate_configs()
-        self.assert_file_exists_with_contents(
-            'app.yaml',
-            self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
-        self.generate_configs(deploy=True)
-        self._validate_docker_files_for_npm()
         self.assertEqual(set(os.listdir(self.temp_path)),
                          {'Dockerfile', '.dockerignore', 'app.yaml',
                           'foo.js', 'package.json'})
-
-    def _validate_docker_files_for_yarn(self):
-        base_dockerfile = self.read_dist_file('data', 'Dockerfile')
-        install_yarn = self.read_dist_file('data', 'install-yarn')
-        self.assert_file_exists_with_contents(
-            'Dockerfile',
-            base_dockerfile + install_yarn + 'COPY . /app/\n' +
-            self.read_dist_file('data', 'yarn-package-json-install') +
-            'CMD yarn start\n')
-        self.assert_file_exists_with_contents(
-            '.dockerignore',
-            self.read_dist_file('data', 'dockerignore'))
-
-    def test_node_js_package_json_yarn(self):
-        self.write_file('foo.js', 'bogus contents')
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('yarn.lock', 'yarn overridden')
-        self.generate_configs()
-        self.assert_file_exists_with_contents(
-            'app.yaml',
-            self.read_dist_file('data', 'app.yaml').format(runtime='nodejs'))
-        self.generate_configs(deploy=True)
-        self._validate_docker_files_for_yarn()
-        self.assertEqual(set(os.listdir(self.temp_path)),
-                         {'Dockerfile', '.dockerignore', 'app.yaml',
-                          'foo.js', 'package.json', 'yarn.lock'})
-
-    def _validate_file_list_for_skip_yarn_lock(self):
-        self.assertEqual(set(os.listdir(self.temp_path)),
-                         {'Dockerfile', '.dockerignore', 'yarn.lock',
-                          'foo.js', 'package.json'})
-
-    def test_skip_yarn_lock_with_other_files(self):
-        """Ensure use_yarn is False with yarn.lock present but is being skipped.
-
-        Further, this test verifies that use_yarn is False even if multiple
-        other entries are present in skip_files.
-
-        A yarn executable is injected that passes all checks to ensure that if
-        yarn.lock is set to be skipped, use_yarn is set to False even if yarn
-        can be executed and reports that the yarn.lock file is valid.
-        """
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('foo.js', 'fake contents')
-        self.write_file('yarn.lock', 'fake contents')
-        config = testutil.AppInfoFake(runtime='nodejs',
-                                      skip_files=['^abc$',
-                                                  '^xyz$',
-                                                  '^yarn\.lock$',
-                                                  '^node_modules$'])
-        configurator = self.detect(appinfo=config)
-        self.assertEqual(configurator.data['use_yarn'], False)
-        self.generate_configs(appinfo=config, deploy=True)
-        self._validate_docker_files_for_npm()
-        self._validate_file_list_for_skip_yarn_lock()
-
-    def test_only_skip_yarn_lock(self):
-        """Ensure use_yarn is False with yarn.lock present but is being skipped.
-
-        Further, this test ensures use_yarn is false if the value obtained
-        from skip_files is a regex string and not a list of strings.
-
-        A yarn executable is injected that passes all checks to ensure that if
-        yarn.lock is set to be skipped, use_yarn is set to False even if yarn
-        can be executed and reports that the yarn.lock file is valid.
-        """
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('foo.js', 'fake contents')
-        self.write_file('yarn.lock', 'fake contents')
-        config = testutil.AppInfoFake(runtime='nodejs',
-                                      skip_files='^yarn\.lock$')
-        configurator = self.detect(appinfo=config)
-        self.assertEqual(configurator.data['use_yarn'], False)
-        self.generate_configs(appinfo=config, deploy=True)
-        self._validate_docker_files_for_npm()
-        self._validate_file_list_for_skip_yarn_lock()
-
-    def test_do_not_skip_yarn_lock(self):
-        """Ensure use_yarn is True with yarn.lock present and not skipped.
-        """
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('foo.js', 'fake contents')
-        self.write_file('yarn.lock', 'fake contents')
-        # Here only 'node_modules' will be skipped
-        config = testutil.AppInfoFake(runtime='nodejs',
-                                      skip_files='^node_modules$')
-        configurator = self.detect(appinfo=config)
-        self.assertEqual(configurator.data['use_yarn'], True)
-        self.generate_configs(appinfo=config, deploy=True)
-        self._validate_docker_files_for_yarn()
-        self._validate_file_list_for_skip_yarn_lock()
-
-    def test_use_yarn_skip_files_not_present(self):
-        """Ensure use_yarn is True with yarn.lock present and not skipped.
-
-        In particular, this test ensures use_yarn is True even if app.yaml
-        doesn't contain a skip_files section.
-        """
-        self.write_file('package.json', '{"scripts": {"start": "foo.js"}}')
-        self.write_file('foo.js', 'fake contents')
-        self.write_file('yarn.lock', 'fake contents')
-        config = testutil.AppInfoFake(runtime='nodejs')
-        configurator = self.detect(appinfo=config)
-        self.assertEqual(configurator.data['use_yarn'], True)
-        self.generate_configs(appinfo=config, deploy=True)
-        self._validate_docker_files_for_yarn()
-        self._validate_file_list_for_skip_yarn_lock()
 
     def test_node_js_package_json_no_write(self):
         """Test generate_config_data with a nodejs file and package.json."""
@@ -236,7 +127,7 @@ class RuntimeTests(testutil.TestBase):
             cfg_files,
             'Dockerfile',
             base_dockerfile + 'COPY . /app/\n' +
-            self.read_dist_file('data', 'npm-package-json-install') +
+            self.read_dist_file('data', 'package-json-install') +
             'CMD npm start\n')
         self.assert_genfile_exists_with_contents(
             cfg_files,
@@ -407,7 +298,6 @@ class FailureLoggingTests(testutil.TestBase):
 
         self.errors = []
         self.debug = []
-        self.warnings = []
 
     def error_fake(self, message):
         self.errors.append(message)
@@ -415,16 +305,13 @@ class FailureLoggingTests(testutil.TestBase):
     def debug_fake(self, message):
         self.debug.append(message)
 
-    def warn_fake(self, message):
-        self.warnings.append(message)
-
     def test_invalid_package_json(self):
         self.write_file('package.json', '')
         self.write_file('server.js', '')
         with mock.patch.dict(ext_runtime._LOG_FUNCS,
-                             {'warn': self.warn_fake}):
+                             {'debug': self.debug_fake}):
             self.generate_configs()
-        self.assertTrue(self.warnings[0].startswith(
+        self.assertTrue(self.debug[0].startswith(
             'node.js checker: error accessing package.json'))
 
         variations = [
@@ -432,12 +319,12 @@ class FailureLoggingTests(testutil.TestBase):
             (None, 'nodejs'),
         ]
         for appinfo, runtime in variations:
-            self.warnings = []
+            self.errors = []
             with mock.patch.dict(ext_runtime._LOG_FUNCS,
-                                 {'warn': self.warn_fake}):
+                                 {'error': self.error_fake}):
                 self.generate_configs(appinfo=appinfo, runtime=runtime)
 
-            self.assertTrue(self.warnings[0].startswith(
+            self.assertTrue(self.errors[0].startswith(
                 'node.js checker: error accessing package.json'))
 
     def test_no_startup_script(self):
@@ -446,8 +333,7 @@ class FailureLoggingTests(testutil.TestBase):
             self.generate_configs()
         print self.debug
         self.assertTrue(self.debug[1].startswith(
-            'node.js checker: Neither "start" in the "scripts" section '
-            'of "package.json" nor the "server.js" file were found.'))
+            'node.js checker: No npm start and no server.js'))
 
         variations = [
             (testutil.AppInfoFake(runtime='nodejs'), None),
@@ -459,8 +345,11 @@ class FailureLoggingTests(testutil.TestBase):
                                  {'error': self.error_fake}):
                 self.generate_configs(appinfo=appinfo, runtime=runtime)
             self.assertTrue(self.errors[0].startswith(
-                'node.js checker: Neither "start" in the "scripts" section '
-                'of "package.json" nor the "server.js" file were found.'))
+                'node.js checker: No npm start and no server.js'))
+
 
 if __name__ == '__main__':
   unittest.main()
+
+
+

@@ -643,26 +643,16 @@ def ConfigureNoOpAuthIfNeeded():
       from gslib import no_op_auth_plugin  # pylint: disable=unused-variable
 
 
-def GetConfigFilePaths():
-  """Returns a list of the path(s) to the boto config file(s) to be loaded."""
-  config_paths = []
-  # The only case in which we load multiple boto configurations is
-  # when the BOTO_CONFIG environment variable is not set and the
-  # BOTO_PATH environment variable is set with multiple path values.
-  # Otherwise, we stop when we find the first readable config file.
-  # This predicate was taken from the boto.pyami.config module.
-  should_look_for_multiple_configs = (
-      'BOTO_CONFIG' not in os.environ and
-      'BOTO_PATH' in os.environ)
+def GetConfigFilePath():
+  config_path = 'no config found'
   for path in BotoConfigLocations:
     try:
       with open(path, 'r'):
-        config_paths.append(path)
-        if not should_look_for_multiple_configs:
-          break
+        config_path = path
+      break
     except IOError:
       pass
-  return config_paths
+  return config_path
 
 
 def GetBotoConfigFileList():
@@ -690,12 +680,6 @@ def GetCertsFile():
     string filename of the certs file to use.
   """
   certs_file = boto.config.get('Boto', 'ca_certificates_file', None)
-  # The 'system' keyword indicates to use the system installed certs. Some
-  # Linux distributions patch the stack such that the Python SSL
-  # infrastructure picks up the system installed certs by default, thus no
-  #  action necessary on our part
-  if certs_file == 'system':
-    return None
   if not certs_file:
     with certs_file_lock:
       if configured_certs_files:
@@ -1723,8 +1707,8 @@ def ConvertRecursiveToFlatWildcard(url_strs):
 def NormalizeStorageClass(sc):
   """Returns a normalized form of the given storage class name.
 
-  Converts the given string to uppercase and expands valid abbreviations to
-  full storage class names (e.g 'std' would return 'STANDARD'). Note that this
+  Converts the given string to lowercase and expands valid abbreviations to
+  full storage class names (e.g 'std' would return 'standard'). Note that this
   method does not check if the given storage class is valid.
 
   Args:
@@ -1734,14 +1718,12 @@ def NormalizeStorageClass(sc):
     A string representing the full name of the given storage class.
   """
   shorthand_to_full_name = {
-      'CL': 'COLDLINE',
-      'DRA': 'DURABLE_REDUCED_AVAILABILITY',
-      'NL': 'NEARLINE',
-      'S': 'STANDARD',
-      'STD': 'STANDARD'}
-  # Use uppercase; storage class argument for the S3 API must be uppercase,
-  # and it's case-insensitive for GS APIs.
-  sc = sc.upper()
+      'cl': 'coldline',
+      'dra': 'durable_reduced_availability',
+      'nl': 'nearline',
+      's': 'standard',
+      'std': 'standard'}
+  sc = sc.lower()
   if sc in shorthand_to_full_name:
     sc = shorthand_to_full_name[sc]
   return sc

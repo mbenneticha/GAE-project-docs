@@ -770,9 +770,8 @@ def CaptureAndLogException(func):
     try:
       return func(*args, **kwds)
     except Exception, e:  # pylint:disable=broad-except
-      logger = logging.getLogger('metrics')
-      logger.debug('Exception captured in %s during metrics collection: %s',
-                   func.__name__, e)
+      logging.debug('Exception captured in %s during metrics collection: %s',
+                    func.__name__, e)
   return Wrapper
 
 
@@ -799,10 +798,8 @@ def CaptureThreadStatException(func):
   return Wrapper
 
 
-# Ordering of these wrappers is important, since both have exception handling.
-# CaptureAndLogException will swallow the exception.
-@atexit.register
 @CaptureAndLogException
+@atexit.register
 def Shutdown():
   """Reports the metrics that were collected upon termination."""
   collector = MetricsCollector.GetCollector()

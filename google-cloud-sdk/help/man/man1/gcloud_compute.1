@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud compute \- create and manipulate Google Compute Engine resources
+gcloud compute \- read and manipulate Google Compute Engine resources
 
 
 
@@ -17,16 +17,7 @@ gcloud compute \- create and manipulate Google Compute Engine resources
 
 .SH "DESCRIPTION"
 
-The gcloud compute command group lets you create, configure and manipulate
-Google Compute Engine virtual machines.
-
-With Compute Engine you can create and run virtual machines on Google
-infrastructure. Compute Engine offers scale, performance, and value that allows
-you to easily launch large compute clusters on Google's infrastructure.
-
-More information on Compute Engine can be found here:
-https://cloud.google.com/compute/ and detailed documentation can be found here:
-https://cloud.google.com/compute/docs/
+Read and manipulate Google Compute Engine resources.
 
 
 
@@ -46,10 +37,6 @@ Run \fB$ gcloud help\fR for a description of flags available to all commands.
 Read and manipulate Google Compute Engine addresses.
 
 .TP 2m
-\fBbackend\-buckets\fR
-Read and manipulate backend buckets.
-
-.TP 2m
 \fBbackend\-services\fR
 List, create, and delete backend services.
 
@@ -67,7 +54,7 @@ List, create, update, and delete Google Compute Engine firewall rules.
 
 .TP 2m
 \fBforwarding\-rules\fR
-Read and manipulate traffic forwarding rules to network load balancers.
+Read and manipulate forwarding rules to send traffic to load balancers.
 
 .TP 2m
 \fBhealth\-checks\fR
@@ -181,10 +168,6 @@ List Google Compute Engine zones.
 .TP 2m
 \fBconfig\-ssh\fR
 Populate SSH config files with Host entries from each instance.
-
-.TP 2m
-\fBconnect\-to\-serial\-port\fR
-Connect to the serial port of an instance.
 
 .TP 2m
 \fBcopy\-files\fR

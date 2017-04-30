@@ -25,7 +25,6 @@ from gslib.storage_url import StorageUrlFromString
 import gslib.tests.testcase as testcase
 from gslib.tests.testcase.integration_testcase import SkipForGS
 from gslib.tests.testcase.integration_testcase import SkipForS3
-from gslib.tests.util import GenerationFromURI as urigen
 from gslib.tests.util import ObjectToURI as suri
 from gslib.tests.util import SetBotoConfigForTest
 from gslib.tests.util import unittest
@@ -589,12 +588,11 @@ class TestAcl(TestAclBase):
     """Tests changing ACLs on multiple object versions."""
     bucket = self.CreateVersionedBucket()
     object_name = self.MakeTempName('obj')
-    obj1_uri = self.CreateObject(
+    self.CreateObject(
         bucket_uri=bucket, object_name=object_name, contents='One thing')
     # Create another on the same URI, giving us a second version.
     self.CreateObject(
-        bucket_uri=bucket, object_name=object_name, contents='Another thing',
-        gs_idempotent_generation=urigen(obj1_uri))
+        bucket_uri=bucket, object_name=object_name, contents='Another thing')
 
     lines = self.AssertNObjectsInBucket(bucket, 2, versioned=True)
 
@@ -627,11 +625,10 @@ class TestAcl(TestAclBase):
 
   def testAclGetWithoutFullControl(self):
     object_uri = self.CreateObject(contents='foo')
-    expected_error_regex = r'Anonymous user(s)? do(es)? not have'
     with self.SetAnonymousBotoCreds():
       stderr = self.RunGsUtil(self._get_acl_prefix + [suri(object_uri)],
                               return_stderr=True, expected_status=1)
-      self.assertRegexpMatches(stderr, expected_error_regex)
+      self.assertIn('AccessDeniedException', stderr)
 
   def testTooFewArgumentsFails(self):
     """Tests calling ACL commands with insufficient number of arguments."""

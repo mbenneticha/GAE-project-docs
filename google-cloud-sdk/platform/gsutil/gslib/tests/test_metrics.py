@@ -37,7 +37,6 @@ import gslib.exception
 from gslib.gcs_json_api import GcsJsonApi
 from gslib.metrics import MetricsCollector
 from gslib.metrics_reporter import LOG_FILE_PATH
-from gslib.tests.mock_logging_handler import MockLoggingHandler
 import gslib.tests.testcase as testcase
 from gslib.tests.testcase.integration_testcase import SkipForS3
 from gslib.tests.util import HAS_S3_CREDS
@@ -51,7 +50,6 @@ from gslib.util import IS_LINUX
 from gslib.util import IS_WINDOWS
 from gslib.util import LogAndHandleRetries
 from gslib.util import ONE_KIB
-from gslib.util import ONE_MIB
 from gslib.util import START_CALLBACK_PER_BYTES
 import mock
 
@@ -147,12 +145,6 @@ class TestMetricsUnitTests(testcase.GsUtilUnitTestCase):
     MetricsCollector.StartTestCollector('https://example.com', 'user-agent-007',
                                         {'a': 'b', 'c': 'd'})
     self.collector = MetricsCollector.GetCollector()
-
-    self.log_handler = MockLoggingHandler()
-    # Use metrics logger to avoid impacting the root logger which may
-    # interfere with other tests.
-    logging.getLogger('metrics').setLevel(logging.DEBUG)
-    logging.getLogger('metrics').addHandler(self.log_handler)
 
   def tearDown(self):
     super(TestMetricsUnitTests, self).tearDown()
@@ -473,30 +465,29 @@ class TestMetricsUnitTests(testcase.GsUtilUnitTestCase):
 
   def testExceptionCatchingDecorator(self):
     """Tests the exception catching decorator CaptureAndLogException."""
+    original_log_level = self.root_logger.getEffectiveLevel()
+    self.root_logger.setLevel(logging.DEBUG)
 
-    # A wrapped function with an exception should not stop the process.
+    # Test that a wrapped function with an exception doesn't stop the process.
     mock_exc_fn = mock.MagicMock(__name__='mock_exc_fn',
                                  side_effect=Exception())
     wrapped_fn = metrics.CaptureAndLogException(mock_exc_fn)
     wrapped_fn()
-
-    debug_messages = self.log_handler.messages['debug']
-    self.assertIn('Exception captured in mock_exc_fn during metrics collection',
-                  debug_messages[0])
-    self.log_handler.reset()
-
     self.assertEqual(1, mock_exc_fn.call_count)
+    with open(self.log_handler_file) as f:
+      log_output = f.read()
+      self.assertIn('Exception captured in mock_exc_fn during metrics '
+                    'collection', log_output)
 
     mock_err_fn = mock.MagicMock(__name__='mock_err_fn',
                                  side_effect=TypeError())
     wrapped_fn = metrics.CaptureAndLogException(mock_err_fn)
     wrapped_fn()
     self.assertEqual(1, mock_err_fn.call_count)
-
-    debug_messages = self.log_handler.messages['debug']
-    self.assertIn('Exception captured in mock_err_fn during metrics collection',
-                  debug_messages[0])
-    self.log_handler.reset()
+    with open(self.log_handler_file) as f:
+      log_output = f.read()
+      self.assertIn('Exception captured in mock_err_fn during metrics '
+                    'collection', log_output)
 
     # Test that exceptions in the unprotected metrics functions are caught.
     with mock.patch.object(MetricsCollector, 'GetCollector',
@@ -508,18 +499,27 @@ class TestMetricsUnitTests(testcase.GsUtilUnitTestCase):
       metrics.LogFatalError()
       metrics.LogPerformanceSummaryParams()
       metrics.CheckAndMaybePromptForAnalyticsEnabling('invalid argument')
-
-      debug_messages = self.log_handler.messages['debug']
-      message_index = 0
-      for func_name in ('Shutdown', 'LogCommandParams', 'LogRetryableError',
-                        'LogFatalError', 'LogPerformanceSummaryParams',
-                        'CheckAndMaybePromptForAnalyticsEnabling'):
+      with open(self.log_handler_file) as f:
+        log_output = f.read()
         self.assertIn(
-            'Exception captured in %s during metrics collection' % func_name,
-            debug_messages[message_index])
-        message_index += 1
-
-      self.log_handler.reset()
+            'Exception captured in Shutdown during metrics collection',
+            log_output)
+        self.assertIn(
+            'Exception captured in LogCommandParams during metrics collection',
+            log_output)
+        self.assertIn(
+            'Exception captured in LogRetryableError during metrics collection',
+            log_output)
+        self.assertIn(
+            'Exception captured in LogFatalError during metrics collection',
+            log_output)
+        self.assertIn(
+            'Exception captured in LogPerformanceSummaryParams during metrics '
+            'collection', log_output)
+        self.assertIn(
+            'Exception captured in CheckAndMaybePromptForAnalyticsEnabling '
+            'during metrics collection', log_output)
+    self.root_logger.setLevel(original_log_level)
 
 
 # Mock callback handlers to throw errors in integration tests, based on handlers
@@ -910,7 +910,7 @@ class TestMetricsIntegrationTests(testcase.GsUtilIntegrationTestCase):
     """Tests PerformanceSummary collection in a file-to-file transfer."""
     tmpdir1 = self.CreateTempDir()
     tmpdir2 = self.CreateTempDir()
-    file_size = ONE_MIB
+    file_size = 6
     self.CreateTempFile(tmpdir=tmpdir1, contents='a' * file_size)
 
     # Run an rsync file-to-file command with fan parallelism, without slice
@@ -935,11 +935,7 @@ class TestMetricsIntegrationTests(testcase.GsUtilIntegrationTestCase):
       self._CheckParameterValue('Number of Files/Objects Transferred', 1,
                                 metrics_list)
 
-      (_, _, io_time) = self._GetAndCheckAllNumberMetrics(metrics_list)
-      if IS_LINUX:  # io_time will be None on other platforms.
-        # We can't guarantee that the file read/write will consume a
-        # reportable amount of disk I/O, but it should be reported as >= 0.
-        self.assertGreaterEqual(io_time, 0)
+      self._GetAndCheckAllNumberMetrics(metrics_list)
 
   @SkipForS3('No slice parallelism support for S3.')
   def testPerformanceSummaryFileToCloud(self):
@@ -973,9 +969,7 @@ class TestMetricsIntegrationTests(testcase.GsUtilIntegrationTestCase):
                                 metrics_list)
       (_, _, io_time) = self._GetAndCheckAllNumberMetrics(metrics_list)
       if IS_LINUX:  # io_time will be None on other platforms.
-        # We can't guarantee that the file read will consume a
-        # reportable amount of disk I/O, but it should be reported as >= 0.
-        self.assertGreaterEqual(io_time, 0)
+        self.assertGreater(io_time, 0)
 
   @SkipForS3('No slice parallelism support for S3.')
   def testPerformanceSummaryCloudToFile(self):
@@ -1008,11 +1002,7 @@ class TestMetricsIntegrationTests(testcase.GsUtilIntegrationTestCase):
                                 metrics_list)
       self._CheckParameterValue('Size of Files/Objects Transferred', file_size,
                                 metrics_list)
-      (_, _, io_time) = self._GetAndCheckAllNumberMetrics(metrics_list)
-      if IS_LINUX:  # io_time will be None on other platforms.
-        # We can't guarantee that the file write will consume a
-        # reportable amount of disk I/O, but it should be reported as >= 0.
-        self.assertGreaterEqual(io_time, 0)
+      self._GetAndCheckAllNumberMetrics(metrics_list)
 
   def testPerformanceSummaryCloudToCloud(self):
     """Tests PerformanceSummary collection in a cloud-to-cloud transfer."""

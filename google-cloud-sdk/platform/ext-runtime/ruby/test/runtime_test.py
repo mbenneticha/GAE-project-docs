@@ -30,7 +30,7 @@ DOCKERFILE_TEXT = '''\
 # * A recent version of NodeJS
 # * A recent version of the standard Ruby runtime to use by default
 # * The bundler gem
-FROM gcr.io/google-appengine/ruby:{base_image_tag}
+FROM gcr.io/google_appengine/ruby
 
 # If your application requires a specific ruby version (compatible with rbenv),
 # set it here. Leave blank to use the currently recommended default.
@@ -68,7 +68,7 @@ ENV RACK_ENV=production \\
 
 # Run asset pipeline if we're in a Rails app.
 RUN if test -d app/assets -a -f config/application.rb; then \\
-      bundle exec rake assets:precompile || true; \\
+      bundle exec rake assets:precompile; \\
     fi
 
 # BUG: Reset entrypoint to override base image.

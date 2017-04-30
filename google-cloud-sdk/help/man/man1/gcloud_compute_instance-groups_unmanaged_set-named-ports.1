@@ -25,8 +25,6 @@ This information is used by the HTTP Load Balancing service.
 \fBgcloud compute instance\-groups unmanaged set\-named\-ports\fR sets the list
 of named ports for all instances in an instance group.
 
-Note: Running this command will clear all existing named ports.
-
 
 
 .SH "POSITIONAL ARGUMENTS"
@@ -54,6 +52,7 @@ To clear the list of named ports pass empty list as flag value. For example:
 $ gcloud compute instance\-groups unmanaged set\-named\-ports \e
     example\-instance\-group \-\-named\-ports ""
 .RE
+
 
 
 .RE

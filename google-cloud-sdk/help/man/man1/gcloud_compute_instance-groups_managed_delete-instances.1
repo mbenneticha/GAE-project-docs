@@ -18,7 +18,7 @@ gcloud compute instance\-groups managed delete\-instances \- delete instances ma
 .SH "DESCRIPTION"
 
 \fBgcloud compute instance\-groups managed delete\-instances\fR is used to
-delete one or more instances from a managed instance group. Once the instances
+deletes one or more instances from a managed instance group. Once the instances
 are deleted, the size of the group is automatically reduced to reflect the
 changes.
 
@@ -65,9 +65,6 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
-Overrides the default \fBcompute/region\fR property value for this command
-invocation.
-
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
 The zone of the managed instance group to operate on. If not specified, you will
@@ -78,9 +75,6 @@ A list of zones can be fetched by running:
 .RS 2m
 $ gcloud compute zones list
 .RE
-
-Overrides the default \fBcompute/zone\fR property value for this command
-invocation.
 
 
 .RE

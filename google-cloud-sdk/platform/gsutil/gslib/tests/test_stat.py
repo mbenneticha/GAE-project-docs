@@ -21,7 +21,6 @@ from gslib.exception import NO_URLS_MATCHED_TARGET
 import gslib.tests.testcase as testcase
 from gslib.tests.testcase.integration_testcase import SkipForS3
 from gslib.tests.testcase.integration_testcase import SkipForXML
-from gslib.tests.util import GenerationFromURI as urigen
 from gslib.tests.util import ObjectToURI as suri
 from gslib.tests.util import SetBotoConfigForTest
 from gslib.tests.util import TEST_ENCRYPTION_CONTENT1
@@ -56,11 +55,11 @@ class TestStat(testcase.GsUtilIntegrationTestCase):
     old_object_uri = self.CreateObject(
         bucket_uri=bucket_uri, contents='z')
 
-    # Update object
+    # update file
     self.CreateObject(
         bucket_uri=bucket_uri,
         object_name=old_object_uri.object_name,
-        contents='z', gs_idempotent_generation=urigen(old_object_uri))
+        contents='z')
 
     stdout = self.RunGsUtil(
         ['stat', old_object_uri.version_specific_uri], return_stdout=True)

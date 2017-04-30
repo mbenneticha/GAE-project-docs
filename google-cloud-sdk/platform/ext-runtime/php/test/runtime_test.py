@@ -47,7 +47,7 @@ class RuntimeTestCase(testutil.TestBase):
         return textwrap.dedent('''\
             # Dockerfile extending the generic PHP image with application files for a
             # single application.
-            FROM gcr.io/google-appengine/php:latest
+            FROM gcr.io/google_appengine/php:latest
 
             # The Docker image will configure the document root according to this
             # environment variable.
@@ -78,7 +78,6 @@ class RuntimeTestCase(testutil.TestBase):
         self.assertIn('runtime: php\n', app_yaml)
         self.assertIn('env: flex\n', app_yaml)
         self.assertIn('runtime_config:\n  document_root: .\n', app_yaml)
-        self.assertNotIn('entrypoint', app_yaml)
 
         self.assertFalse(os.path.exists(self.full_path('Dockerfile')))
         self.assertFalse(os.path.exists(self.full_path('.dockerignore')))
@@ -150,7 +149,7 @@ class RuntimeTestCase(testutil.TestBase):
         self.assertEqual(dockerfile, textwrap.dedent('''\
             # Dockerfile extending the generic PHP image with application files for a
             # single application.
-            FROM gcr.io/google-appengine/php:latest
+            FROM gcr.io/google_appengine/php:latest
 
             # The Docker image will configure the document root according to this
             # environment variable.

@@ -17,7 +17,6 @@
 
 import json
 import os
-import posixpath
 import sys
 
 def get_config():
@@ -54,19 +53,18 @@ def main(args):
     if appinfo and 'runtime_config' in appinfo:
         if 'document_root' in appinfo['runtime_config']:
             root = appinfo['runtime_config']['document_root']
-            document_root = posixpath.normpath(posixpath.join('/app', root))
+            document_root = os.path.normpath(os.path.join('/app', root))
 
     directory = args[1]
     for dirpath, _, filenames in os.walk(directory):
         for filename in filenames:
             if filename.endswith('.php'):
-                # "appinfo" writes to the app.yaml when it's generated, and
-		# "runtime_data" writes to the Dockerfile
-                json_config = {
+                json.dump({
                     'type': 'runtime_parameters',
                     'appinfo': {
                         'runtime': 'custom' if params['custom'] else 'php',
                         'env': 'flex',
+                        'entrypoint': entrypoint,
                         'runtime_config': {
                             'document_root': root,
                         },
@@ -75,11 +73,7 @@ def main(args):
                         'entrypoint': entrypoint,
                         'document_root': document_root,
                     },
-                }
-                # Prevent "entrypoint: null" in generated app.yaml
-                #if entrypoint:
-                #    json_config['appinfo']['entrypoint'] = entrypoint
-                json.dump(json_config, sys.stdout)
+                }, sys.stdout)
                 sys.stdout.write('\n')
                 sys.stdout.flush()
                 return 0

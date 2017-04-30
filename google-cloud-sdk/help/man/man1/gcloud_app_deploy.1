@@ -22,10 +22,6 @@ server. As an input it takes one or more \f5\fIDEPLOYABLES\fR\fR that should be
 uploaded. A \f5\fIDEPLOYABLE\fR\fR can be a service's .yaml file or a
 configuration's .yaml file.
 
-This command supports App Engine flexible task queue files. The format of task
-queue files can be found at:
-https://cloud.google.com/appengine/docs/python/config/queueref
-
 
 
 .SH "POSITIONAL ARGUMENTS"
@@ -67,11 +63,14 @@ run:
 $ gcloud config set app/promote_by_default false
 .RE
 
+Overrides the default \fBpromote_by_default\fR property value for this command
+invocation. Use \fB\-\-no\-promote\fR to disable.
+
 .TP 2m
 \fB\-\-stop\-previous\-version\fR
 Stop the previously running version when deploying a new version that receives
-all traffic. Overrides the default \fBapp/stop_previous_version\fR property
-value for this command invocation. Use \fB\-\-no\-stop\-previous\-version\fR to
+all traffic. Overrides the default \fBstop_previous_version\fR property value
+for this command invocation. Use \fB\-\-no\-stop\-previous\-version\fR to
 disable.
 
 .TP 2m

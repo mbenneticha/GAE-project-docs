@@ -27,7 +27,6 @@ from gslib.iamhelpers import PatchBindings
 import gslib.tests.testcase as testcase
 from gslib.tests.testcase.integration_testcase import SkipForS3
 from gslib.tests.testcase.integration_testcase import SkipForXML
-from gslib.tests.util import GenerationFromURI as urigen
 from gslib.tests.util import SetBotoConfigForTest
 from gslib.third_party.storage_apitools import storage_v1_messages as apitools_messages
 from gslib.util import Retry
@@ -853,11 +852,11 @@ class TestIamSet(TestIamIntegration):
     gsutil_object = self.CreateObject(
         bucket_uri=self.versioned_bucket,
         object_name=old_gsutil_object.object_name,
-        contents='new_foo', gs_idempotent_generation=urigen(old_gsutil_object))
+        contents='new_foo')
     gsutil_object2 = self.CreateObject(
         bucket_uri=self.versioned_bucket,
         object_name=old_gsutil_object2.object_name,
-        contents='new_bar', gs_idempotent_generation=urigen(old_gsutil_object2))
+        contents='new_bar')
     return (old_gsutil_object, old_gsutil_object2, gsutil_object,
             gsutil_object2)
 

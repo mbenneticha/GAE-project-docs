@@ -5,7 +5,7 @@
 
 .SH "NAME"
 .HP
-gcloud app \- manage your App Engine deployments
+gcloud app \- manage your App Engine app
 
 
 
@@ -17,17 +17,9 @@ gcloud app \- manage your App Engine deployments
 
 .SH "DESCRIPTION"
 
-The gcloud app command group lets you deploy and manage your Google App Engine
-apps. These commands replace their equivalents in the appcfg tool.
-
-App Engine is a platform for building scalable web applications and mobile
-backends. App Engine provides you with built\-in services and APIs such as NoSQL
-datastores, memcache, and a user authentication API, common to most
-applications.
-
-More information on App Engine can be found here:
-https://cloud.google.com/appengine and detailed documentation can be found here:
-https://cloud.google.com/appengine/docs/
+This set of commands allows you to deploy your app, manage your existing
+deployments, and also run your app locally. These commands replace their
+equivalents in the appcfg tool.
 
 
 
@@ -49,10 +41,6 @@ View and manage your App Engine instances.
 .TP 2m
 \fBlogs\fR
 Manage your App Engine logs.
-
-.TP 2m
-\fBoperations\fR
-View and manage your App Engine Operations.
 
 .TP 2m
 \fBregions\fR
@@ -86,10 +74,6 @@ Create an App Engine app within the current Google Cloud Project.
 .TP 2m
 \fBdeploy\fR
 Deploy the local code and/or configuration of your app to App Engine.
-
-.TP 2m
-\fBdescribe\fR
-Display all data about an existing service.
 
 .TP 2m
 \fBopen\-console\fR

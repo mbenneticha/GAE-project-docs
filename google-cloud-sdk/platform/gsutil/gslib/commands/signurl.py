@@ -176,8 +176,7 @@ def _DurationToTimeDelta(duration):
 
 
 def _GenSignedUrl(key, client_id, method, md5,
-                  content_type, expiration, gcs_path, logger,
-                  string_to_sign_debug=False):
+                  content_type, expiration, gcs_path, logger):
   """Construct a string to sign with the provided key.
 
   Args:
@@ -192,9 +191,6 @@ def _GenSignedUrl(key, client_id, method, md5,
     gcs_path: String path to the bucket of object for signing, in the form
         'bucket' or 'bucket/object'.
     logger: logging.Logger for warning and debug output.
-    string_to_sign_debug: If true AND logger is enabled for debug level,
-        print string to sign to debug. Used to differentiate user's
-        signed URL from the probing permissions-check signed URL.
 
   Returns:
     The complete url (string).
@@ -214,10 +210,6 @@ def _GenSignedUrl(key, client_id, method, md5,
   tosign = ('{0}\n{1}\n{2}\n{3}\n{4}'
             .format(method, md5, content_type,
                     expiration, canonicalized_resource))
-  if string_to_sign_debug and logger:
-    logger.debug('String to sign (ignore opening/closing brackets): [[[%s]]]'
-                 % tosign)
-
   signature = base64.b64encode(sign(key, tosign, 'RSA-SHA256'))
 
   final_url = ('https://storage.googleapis.com/{0}?'
@@ -340,10 +332,8 @@ class UrlSignCommand(Command):
   def _ProbeObjectAccessWithClient(self, key, client_email, gcs_path, logger):
     """Performs a head request against a signed url to check for read access."""
 
-    # Choose a reasonable time in the future; if the user's system clock is
-    # 60 or more seconds behind the server's this will generate an error.
     signed_url = _GenSignedUrl(key, client_email, 'HEAD', '', '',
-                               int(time.time()) + 60, gcs_path, logger)
+                               int(time.time()) + 10, gcs_path, logger)
 
     try:
       h = GetNewHttp()
@@ -351,16 +341,12 @@ class UrlSignCommand(Command):
       response = MakeRequest(h, req)
 
       if response.status_code not in [200, 403, 404]:
-        raise HttpError.FromResponse(response)
+        raise HttpError(response)
 
       return response.status_code
-    except HttpError:
-      error_string = ('Unexpected HTTP response code %s while querying '
-                      'object readability. Is your system clock accurate?'
-                      % response.status_code)
-      if response.content:
-        error_string += ' Content: %s' % response.content
-      raise CommandException(error_string)
+    except HttpError as e:
+      raise CommandException('Unexpected response code while querying'
+                             'object readability ({0})'.format(e.message))
 
   def _EnumerateStorageUrls(self, in_urls):
     ret = []
@@ -416,8 +402,7 @@ class UrlSignCommand(Command):
 
       final_url = _GenSignedUrl(key, client_email,
                                 method, '', content_type, expiration,
-                                gcs_path, self.logger,
-                                string_to_sign_debug=True)
+                                gcs_path, self.logger)
 
       expiration_dt = datetime.fromtimestamp(expiration)
 

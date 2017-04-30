@@ -44,7 +44,8 @@ be activated and is applicable only when the instance state is RUNNABLE.
 
 .TP 2m
 \fB\-\-assign\-ip\fR
-The instance must be assigned an IP address.
+The instance must be assigned an IP address. Use \fB\-\-no\-assign\-ip\fR to
+disable.
 
 .TP 2m
 \fB\-\-async\fR
@@ -57,12 +58,13 @@ Show what changed as a result of the update.
 .TP 2m
 \fB\-\-enable\-bin\-log\fR
 Enable binary log. If backup configuration is disabled, binary log should be
-disabled as well.
+disabled as well. Use \fB\-\-no\-enable\-bin\-log\fR to disable.
 
 .TP 2m
 \fB\-\-enable\-database\-replication\fR
 Enable database replication. Applicable only for read replica instance(s).
-WARNING: Instance will be restarted.
+WARNING: Instance will be restarted. Use
+\fB\-\-no\-enable\-database\-replication\fR to disable.
 
 .TP 2m
 \fB\-\-follow\-gae\-app\fR=\fIFOLLOW_GAE_APP\fR
@@ -86,7 +88,8 @@ The type of replication this instance uses. \fIREPLICATION\fR must be one of:
 
 .TP 2m
 \fB\-\-require\-ssl\fR
-mysqld should default to 'REQUIRE X509' for users connecting over IP.
+mysqld should default to 'REQUIRE X509' for users connecting over IP. Use
+\fB\-\-no\-require\-ssl\fR to disable.
 
 .TP 2m
 \fB\-\-tier\fR=\fITIER\fR, \fB\-t\fR \fITIER\fR

@@ -11,7 +11,7 @@ gcloud \- manage Google Cloud Platform resources and developer workflow
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR=\fIACCOUNT\fR] [\fB\-\-configuration\fR=\fICONFIGURATION\fR] [\fB\-\-flatten\fR=[\fIKEY\fR,...]] [\fB\-\-format\fR=\fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-project\fR=\fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-verbosity\fR=\fIVERBOSITY\fR;\ default="warning"] [\fB\-h\fR] [\fB\-\-version\fR,\ \fB\-v\fR] [\fB\-\-log\-http\fR] [\fB\-\-trace\-token\fR=\fITRACE_TOKEN\fR] [\fB\-\-no\-user\-output\-enabled\fR]
+\f5gcloud\fR \fIGROUP\fR | \fICOMMAND\fR [\fB\-\-account\fR=\fIACCOUNT\fR] [\fB\-\-configuration\fR=\fICONFIGURATION\fR] [\fB\-\-flatten\fR=[\fIKEY\fR,...]] [\fB\-\-format\fR=\fIFORMAT\fR] [\fB\-\-help\fR] [\fB\-\-project\fR=\fIPROJECT_ID\fR] [\fB\-\-quiet\fR,\ \fB\-q\fR] [\fB\-\-verbosity\fR=\fIVERBOSITY\fR;\ default="warning"] [\fB\-h\fR] [\fB\-v\fR,\ \fB\-\-version\fR] [\fB\-\-log\-http\fR] [\fB\-\-trace\-token\fR=\fITRACE_TOKEN\fR] [\fB\-\-no\-user\-output\-enabled\fR]
 
 
 
@@ -27,8 +27,7 @@ workflow, and interactions with the Google Cloud Platform APIs.
 .RS 2m
 .TP 2m
 \fB\-\-account\fR=\fIACCOUNT\fR
-Google Cloud Platform user account to use for invocation. Overrides the default
-\fBcore/account\fR property value for this command invocation.
+Google Cloud Platform user account to use for invocation.
 
 .TP 2m
 \fB\-\-configuration\fR=\fICONFIGURATION\fR
@@ -44,18 +43,16 @@ for each item in each slice. Multiple keys and slices may be specified. This
 also flattens keys for \fB\-\-format\fR and \fB\-\-filter\fR. For example,
 \fB\-\-flatten=abc.def[]\fR flattens \fBabc.def[].ghi\fR references to
 \fBabc.def.ghi\fR. A resource record containing \fBabc.def[]\fR with N elements
-will expand to N records in the flattened output. This flag interacts with other
-flags that are applied in this order: \fB\-\-flatten\fR, \fB\-\-sort\-by\fR,
-\fB\-\-filter\fR, \fB\-\-limit\fR.
+will expand to N records in the flattened output.
 
 .TP 2m
 \fB\-\-format\fR=\fIFORMAT\fR
 Sets the format for printing command output resources. The default is a
 command\-specific human\-friendly output format. The supported formats are:
 \f5config\fR, \f5csv\fR, \f5default\fR, \f5diff\fR, \f5disable\fR,
-\f5flattened\fR, \f5get\fR, \f5json\fR, \f5list\fR, \f5multi\fR, \f5none\fR,
-\f5object\fR, \f5table\fR, \f5text\fR, \f5value\fR, \f5yaml\fR. For more details
-run $ gcloud topic formats.
+\f5flattened\fR, \f5json\fR, \f5list\fR, \f5multi\fR, \f5none\fR, \f5object\fR,
+\f5table\fR, \f5text\fR, \f5value\fR, \f5yaml\fR. For more details run $ gcloud
+topic formats.
 
 .TP 2m
 \fB\-\-help\fR
@@ -64,14 +61,12 @@ Display detailed help.
 .TP 2m
 \fB\-\-project\fR=\fIPROJECT_ID\fR
 The Google Cloud Platform project name to use for this invocation. If omitted
-then the current project is assumed. Overrides the default \fBcore/project\fR
-property value for this command invocation.
+then the current project is assumed.
 
 .TP 2m
 \fB\-\-quiet\fR, \fB\-q\fR
 Disable all interactive prompts when running gcloud commands. If input is
-required, defaults will be used, or an error will be raised. Overrides the
-default \fBcore/disable_prompts\fR property value for this command invocation.
+required, defaults will be used, or an error will be raised.
 
 .TP 2m
 \fB\-\-verbosity\fR=\fIVERBOSITY\fR; default="warning"
@@ -83,7 +78,7 @@ Override the default verbosity for this command. \fIVERBOSITY\fR must be one of:
 Print a summary help and exit.
 
 .TP 2m
-\fB\-\-version\fR, \fB\-v\fR
+\fB\-v\fR, \fB\-\-version\fR
 Print version information and exit. This flag is only available at the global
 level.
 
@@ -97,18 +92,17 @@ level.
 .TP 2m
 \fB\-\-log\-http\fR
 Log all HTTP server requests and responses to stderr. Overrides the default
-\fBcore/log_http\fR property value for this command invocation.
+\fBlog_http\fR property value for this command invocation. Use
+\fB\-\-no\-log\-http\fR to disable.
 
 .TP 2m
 \fB\-\-trace\-token\fR=\fITRACE_TOKEN\fR
 Token used to route traces of service requests for investigation of issues.
-Overrides the default \fBcore/trace_token\fR property value for this command
-invocation.
 
 .TP 2m
 \fB\-\-user\-output\-enabled\fR
 Print user intended output to the console. Overrides the default
-\fBcore/user_output_enabled\fR property value for this command invocation. Use
+\fBuser_output_enabled\fR property value for this command invocation. Use
 \fB\-\-no\-user\-output\-enabled\fR to disable.
 
 
@@ -122,7 +116,7 @@ Print user intended output to the console. Overrides the default
 .RS 2m
 .TP 2m
 \fBapp\fR
-Manage your App Engine deployments.
+Manage your App Engine app.
 
 .TP 2m
 \fBauth\fR
@@ -134,7 +128,7 @@ List, install, update, or remove Google Cloud SDK components.
 
 .TP 2m
 \fBcompute\fR
-Create and manipulate Google Compute Engine resources.
+Read and manipulate Google Compute Engine resources.
 
 .TP 2m
 \fBconfig\fR
@@ -145,20 +139,8 @@ View and edit Cloud SDK properties.
 Deploy and manage clusters of machines for running containers.
 
 .TP 2m
-\fBdataflow\fR
-Manage Google Cloud Dataflow jobs.
-
-.TP 2m
 \fBdataproc\fR
 Create and manage Google Cloud Dataproc clusters and jobs.
-
-.TP 2m
-\fBdatastore\fR
-Manage your Cloud Datastore indexes.
-
-.TP 2m
-\fBdebug\fR
-Commands for interacting with the Cloud Debugger.
 
 .TP 2m
 \fBdeployment\-manager\fR
@@ -169,32 +151,16 @@ Manage deployments of cloud resources.
 Manage your Cloud DNS managed\-zones and record\-sets.
 
 .TP 2m
-\fBfirebase\fR
-Work with Google Firebase.
-
-.TP 2m
 \fBiam\fR
 Manage IAM service accounts and keys.
 
 .TP 2m
-\fBkms\fR
-Manage cryptographic keys in the cloud.
-
-.TP 2m
-\fBml\-engine\fR
-Cloud ML Engine command groups.
-
-.TP 2m
-\fBorganizations\fR
-Create and manage Google Cloud Platform Organizations.
+\fBpreview\fR
+\fB(PREVIEW)\fR Preview versions of gcloud commands.
 
 .TP 2m
 \fBprojects\fR
-Create and manage project access policies.
-
-.TP 2m
-\fBservice\-management\fR
-Create, enable and manage API services.
+Manage your projects.
 
 .TP 2m
 \fBsource\fR

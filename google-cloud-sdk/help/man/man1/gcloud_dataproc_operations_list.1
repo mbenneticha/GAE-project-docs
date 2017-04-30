@@ -11,7 +11,7 @@ gcloud dataproc operations list \- view the list of all operations
 
 .SH "SYNOPSIS"
 .HP
-\f5gcloud dataproc operations list\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-state\-filter\fR=\fISTATE_FILTER\fR] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR;\ default="100"] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
+\f5gcloud dataproc operations list\fR [\fB\-\-cluster\fR=\fICLUSTER\fR] [\fB\-\-state\-filter\fR=\fISTATE_FILTER\fR] [\fB\-\-filter\fR=\fIEXPRESSION\fR] [\fB\-\-limit\fR=\fILIMIT\fR] [\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR] [\fB\-\-sort\-by\fR=[\fIFIELD\fR,...]] [\fIGLOBAL\-FLAG\ ...\fR]
 
 
 
@@ -58,19 +58,17 @@ equivalent term in a \-\-filter expression is: \f5status.state = ACTIVE\fR.
 .TP 2m
 \fB\-\-filter\fR=\fIEXPRESSION\fR
 Apply a Boolean filter \fIEXPRESSION\fR to each resource item to be listed. If
-the expression evaluates True then that item is listed. For more details and
-examples of filter expressions run $ gcloud topic filters. This flag interacts
-with other flags that are applied in this order: \fB\-\-flatten\fR,
-\fB\-\-sort\-by\fR, \fB\-\-filter\fR, \fB\-\-limit\fR.
+the expression evaluates True then that item is listed. For more details run $
+gcloud topic filters. If \fB\-\-limit\fR is also specified then it is applied
+after \fB\-\-filter\fR.
 
 .TP 2m
 \fB\-\-limit\fR=\fILIMIT\fR
-The maximum number of resources to list. The default is \fBunlimited\fR. This
-flag interacts with other flags that are applied in this order:
-\fB\-\-flatten\fR, \fB\-\-sort\-by\fR, \fB\-\-filter\fR, \fB\-\-limit\fR.
+The maximum number of resources to list. The default is \fBunlimited\fR. If
+\fB\-\-filter\fR is also specified then it is applied before \fB\-\-limit\fR.
 
 .TP 2m
-\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR; default="100"
+\fB\-\-page\-size\fR=\fIPAGE_SIZE\fR
 Some services group resource list output into pages. This flag specifies the
 maximum number of resources per page. The default is determined by the service
 if it supports paging, otherwise it is \fBunlimited\fR (no paging). Paging may
@@ -81,8 +79,7 @@ service.
 \fB\-\-sort\-by\fR=[\fIFIELD\fR,...]
 A comma\-separated list of resource field key names to sort by. The default
 order is ascending. Prefix a field with ``~'' for descending order on that
-field. This flag interacts with other flags that are applied in this order:
-\fB\-\-flatten\fR, \fB\-\-sort\-by\fR, \fB\-\-filter\fR, \fB\-\-limit\fR.
+field.
 
 
 .RE

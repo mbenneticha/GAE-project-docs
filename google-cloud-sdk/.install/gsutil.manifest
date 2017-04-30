@@ -41,8 +41,6 @@ platform/gsutil/gslib/tests/
 platform/gsutil/gslib/tests/test_help.py
 platform/gsutil/gslib/tests/test_plurality_checkable_iterator.py
 platform/gsutil/gslib/tests/test_parallelism_framework.py
-platform/gsutil/gslib/tests/test_label.py
-platform/gsutil/gslib/tests/test_notification_pubsub.py
 platform/gsutil/gslib/tests/test_naming.py
 platform/gsutil/gslib/tests/test_storage_url.py
 platform/gsutil/gslib/tests/mock_cloud_api.py
@@ -124,10 +122,6 @@ platform/gsutil/gslib/third_party/storage_apitools/credentials_lib.py
 platform/gsutil/gslib/third_party/storage_apitools/storage_v1_client.py
 platform/gsutil/gslib/third_party/storage_apitools/storage_v1_messages.py
 platform/gsutil/gslib/third_party/storage_apitools/__init__.py
-platform/gsutil/gslib/third_party/pubsub_apitools/
-platform/gsutil/gslib/third_party/pubsub_apitools/pubsub_v1_messages.py
-platform/gsutil/gslib/third_party/pubsub_apitools/pubsub_v1_client.py
-platform/gsutil/gslib/third_party/pubsub_apitools/__init__.py
 platform/gsutil/gslib/third_party/__init__.py
 platform/gsutil/gslib/progress_callback.py
 platform/gsutil/gslib/devshell_auth_plugin.py
@@ -139,7 +133,6 @@ platform/gsutil/gslib/commands/web.py
 platform/gsutil/gslib/commands/lifecycle.py
 platform/gsutil/gslib/commands/compose.py
 platform/gsutil/gslib/commands/ls.py
-platform/gsutil/gslib/commands/label.py
 platform/gsutil/gslib/commands/versioning.py
 platform/gsutil/gslib/commands/setmeta.py
 platform/gsutil/gslib/commands/signurl.py
@@ -167,7 +160,6 @@ platform/gsutil/gslib/commands/mv.py
 platform/gsutil/gslib/commands/rb.py
 platform/gsutil/gslib/commands/cors.py
 platform/gsutil/gslib/commands/__init__.py
-platform/gsutil/gslib/pubsub_api.py
 platform/gsutil/gslib/addlhelp/
 platform/gsutil/gslib/addlhelp/retries.py
 platform/gsutil/gslib/addlhelp/prod.py
@@ -208,6 +200,7 @@ platform/gsutil/gsutil.py
 platform/gsutil/MANIFEST.in
 platform/gsutil/third_party/
 platform/gsutil/third_party/pyasn1/
+platform/gsutil/third_party/pyasn1/CHANGES
 platform/gsutil/third_party/pyasn1/pyasn1/
 platform/gsutil/third_party/pyasn1/pyasn1/error.py
 platform/gsutil/third_party/pyasn1/pyasn1/type/
@@ -240,10 +233,13 @@ platform/gsutil/third_party/pyasn1/pyasn1/codec/__init__.py
 platform/gsutil/third_party/pyasn1/pyasn1/debug.py
 platform/gsutil/third_party/pyasn1/pyasn1/compat/
 platform/gsutil/third_party/pyasn1/pyasn1/compat/octets.py
-platform/gsutil/third_party/pyasn1/pyasn1/compat/binary.py
 platform/gsutil/third_party/pyasn1/pyasn1/compat/__init__.py
 platform/gsutil/third_party/pyasn1/pyasn1/__init__.py
+platform/gsutil/third_party/pyasn1/LICENSE
+platform/gsutil/third_party/pyasn1/TODO
 platform/gsutil/third_party/pyasn1/PKG-INFO
+platform/gsutil/third_party/pyasn1/README
+platform/gsutil/third_party/pyasn1/THANKS
 platform/gsutil/third_party/pyasn1/doc/
 platform/gsutil/third_party/pyasn1/doc/constraints.html
 platform/gsutil/third_party/pyasn1/doc/pyasn1-tutorial.html
@@ -258,7 +254,6 @@ platform/gsutil/third_party/pyasn1/test/
 platform/gsutil/third_party/pyasn1/test/suite.py
 platform/gsutil/third_party/pyasn1/test/type/
 platform/gsutil/third_party/pyasn1/test/type/suite.py
-platform/gsutil/third_party/pyasn1/test/type/test_namedval.py
 platform/gsutil/third_party/pyasn1/test/type/test_constraint.py
 platform/gsutil/third_party/pyasn1/test/type/test_univ.py
 platform/gsutil/third_party/pyasn1/test/type/test_namedtype.py
@@ -284,7 +279,6 @@ platform/gsutil/third_party/pyasn1/test/codec/cer/__init__.py
 platform/gsutil/third_party/pyasn1/test/codec/__init__.py
 platform/gsutil/third_party/pyasn1/test/__init__.py
 platform/gsutil/third_party/pyasn1/setup.py
-platform/gsutil/third_party/pyasn1/requirements.txt
 platform/gsutil/third_party/httplib2/
 platform/gsutil/third_party/httplib2/libhttplib2.tex
 platform/gsutil/third_party/httplib2/index.html
@@ -1701,6 +1695,7 @@ platform/gsutil/third_party/apitools/setup.py
 platform/gsutil/third_party/apitools/tox.ini
 platform/gsutil/third_party/apitools/default.pylintrc
 platform/gsutil/third_party/pyasn1-modules/
+platform/gsutil/third_party/pyasn1-modules/CHANGES
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc3447.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc4210.py
@@ -1709,6 +1704,7 @@ platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc5208.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc2437.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc1901.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc1155.py
+platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/pkcs12.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc1905.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc3414.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc2251.py
@@ -1721,12 +1717,11 @@ platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc2560.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc3412.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/rfc1157.py
 platform/gsutil/third_party/pyasn1-modules/pyasn1_modules/__init__.py
-platform/gsutil/third_party/pyasn1-modules/LICENSE.txt
-platform/gsutil/third_party/pyasn1-modules/README.txt
+platform/gsutil/third_party/pyasn1-modules/LICENSE
 platform/gsutil/third_party/pyasn1-modules/PKG-INFO
+platform/gsutil/third_party/pyasn1-modules/README
 platform/gsutil/third_party/pyasn1-modules/setup.cfg
 platform/gsutil/third_party/pyasn1-modules/MANIFEST.in
-platform/gsutil/third_party/pyasn1-modules/CHANGES.txt
 platform/gsutil/third_party/pyasn1-modules/test/
 platform/gsutil/third_party/pyasn1-modules/test/pkcs8.sh
 platform/gsutil/third_party/pyasn1-modules/test/cmp.sh
@@ -1741,6 +1736,7 @@ platform/gsutil/third_party/pyasn1-modules/test/pkcs1.sh
 platform/gsutil/third_party/pyasn1-modules/setup.py
 platform/gsutil/third_party/pyasn1-modules/tools/
 platform/gsutil/third_party/pyasn1-modules/tools/crldump.py
+platform/gsutil/third_party/pyasn1-modules/tools/ocspserver.py
 platform/gsutil/third_party/pyasn1-modules/tools/cmpdump.py
 platform/gsutil/third_party/pyasn1-modules/tools/pkcs10dump.py
 platform/gsutil/third_party/pyasn1-modules/tools/ocspreqdump.py
@@ -1752,7 +1748,6 @@ platform/gsutil/third_party/pyasn1-modules/tools/ocspclient.py
 platform/gsutil/third_party/pyasn1-modules/tools/snmpget.py
 platform/gsutil/third_party/pyasn1-modules/tools/pkcs1dump.py
 platform/gsutil/third_party/pyasn1-modules/tools/x509dump.py
-platform/gsutil/third_party/pyasn1-modules/requirements.txt
 platform/gsutil/third_party/funcsigs/
 platform/gsutil/third_party/funcsigs/requirements/
 platform/gsutil/third_party/funcsigs/requirements/development.txt

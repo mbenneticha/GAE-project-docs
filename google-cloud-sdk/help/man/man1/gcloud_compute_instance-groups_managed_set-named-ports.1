@@ -25,8 +25,6 @@ This information is used by the HTTP Load Balancing service.
 \fBgcloud compute instance\-groups managed set\-named\-ports\fR sets the list of
 named ports for all instances in an instance group.
 
-Note: Running this command will clear all existing named ports.
-
 
 
 .SH "POSITIONAL ARGUMENTS"
@@ -56,6 +54,7 @@ $ gcloud compute instance\-groups managed set\-named\-ports \e
 .RE
 
 
+
 .RE
 .sp
 
@@ -75,9 +74,6 @@ A list of regions can be fetched by running:
 $ gcloud compute regions list
 .RE
 
-Overrides the default \fBcompute/region\fR property value for this command
-invocation.
-
 .TP 2m
 \fB\-\-zone\fR=\fIZONE\fR
 The zone of the instance group to operate on. If not specified, you will be
@@ -88,9 +84,6 @@ A list of zones can be fetched by running:
 .RS 2m
 $ gcloud compute zones list
 .RE
-
-Overrides the default \fBcompute/zone\fR property value for this command
-invocation.
 
 
 .RE

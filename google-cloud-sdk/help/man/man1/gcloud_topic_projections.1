@@ -1097,20 +1097,6 @@ Returns this value if there is no response code.
 
 
 .TP 2m
-\fBproject\fR(undefined="")
-Returns a project name from a selfLink.
-
-The arguments are:
-
-.RS 2m
-.TP 2m
-\fB\f5undefined\fR\fR
-Returns this value if the resource cannot be formatted.
-.RE
-.sp
-
-
-.TP 2m
 \fBquota\fR(undefined="")
 Formats a quota as usage/limit.
 
@@ -1127,20 +1113,6 @@ Returns this value if the resource cannot be formatted.
 .TP 2m
 \fBstatus\fR(undefined="")
 Returns the machine status with deprecation information if applicable.
-
-The arguments are:
-
-.RS 2m
-.TP 2m
-\fB\f5undefined\fR\fR
-Returns this value if the resource cannot be formatted.
-.RE
-.sp
-
-
-.TP 2m
-\fBzone\fR(undefined="")
-Returns a zone name from a selfLink.
 
 The arguments are:
 
@@ -1233,27 +1205,7 @@ Displays the short status in the third table problem.
 .RE
 .RE
 .sp
-The functions transform functions are:
-
-
-.RS 2m
-.TP 2m
-\fBtrigger\fR(undefined="")
-Returns textual information about functions trigger.
-
-The arguments are:
-
-.RS 2m
-.TP 2m
-\fB\f5undefined\fR\fR
-Returns this value if the resource cannot be formatted.
-.RE
-.sp
-
-
-.RE
-.sp
-The runtime_config transform functions are:
+The runtimeconfig transform functions are:
 
 
 .RS 2m
@@ -1278,6 +1230,42 @@ For example:
 .TP 2m
 \f5\-\-format="table(name, status())"\fR
 Displays the status in table column two.
+
+
+.RE
+.RE
+.sp
+The service_registry transform functions are:
+
+
+.RS 2m
+.TP 2m
+\fBendpoint_address\fR(undefined="")
+Returns a compact representation of an endpoint address.
+
+The compact representation for a plain address (no port information) is just the
+address. The compact representation for an address with a port is of the form
+[HOST/IP]:PORT and addresses with more details or more ports will look like
+
+.RS 2m
+address=ADDRESS[;port_number=PORT[,protocol=PROTOCOL][,port_name=name]]+
+.RE
+
+The arguments are:
+
+.RS 2m
+.TP 2m
+\fB\f5undefined\fR\fR
+Returns this value if the resource cannot be formatted.
+.RE
+.sp
+
+For example:
+
+.RS 2m
+.TP 2m
+\f5\-\-format="table(name, addresses[].map().endpoint_address())"\fR
+Displays each address as an endpoint address.
 
 
 
@@ -1327,7 +1315,7 @@ Right.
 \fBlabel\fR=\fILABEL\fR
 A string value used to label output. Use :label="" or :label='' for no label.
 The \fBtable\fR format uses \fILABEL\fR values as column headings. Also sets
-\fILABEL\fR as an alias for the projection key. The default label is the
+\fILABEL\fR as an alias for the projection key. The default label is the the
 disambiguated right hand parts of the column key name in ANGRY_SNAKE_CASE.
 
 .TP 2m
@@ -1339,11 +1327,6 @@ ascending order.
 \fBsort\fR=\fISORT\-ORDER\fR
 An integer counting from 1. Keys with lower sort\-order are sorted first. Keys
 with same sort order are sorted left to right.
-
-.TP 2m
-\fBwrap\fR
-Enables the column text to be wrapped if the table would otherwise be too wide
-for the display.
 
 
 .RE

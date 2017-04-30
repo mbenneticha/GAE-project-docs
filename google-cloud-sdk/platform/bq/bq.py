@@ -90,6 +90,7 @@ _CLIENT_ID = '32555940559.apps.googleusercontent.com'
 _CLIENT_INFO = {
     'client_id': _CLIENT_ID,
     'client_secret': 'ZmssLNjJy2998hD4CTg2ejr2',
+    'scope': [_CLIENT_SCOPE],
     'user_agent': _CLIENT_USER_AGENT,
     }
 _BIGQUERY_TOS_MESSAGE = (
@@ -207,8 +208,12 @@ def _UseServiceAccount():
 
 
 def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-argument
+  client_scope = [_CLIENT_SCOPE]
+  if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
+    client_scope.append(_GDRIVE_SCOPE)
+
   if FLAGS.use_gce_service_account:
-    return AppAssertionCredentials()
+    return AppAssertionCredentials(client_scope)
 
   if not oauth2client.client.HAS_OPENSSL:
     raise app.UsageError(
@@ -230,7 +235,7 @@ def _GetServiceAccountCredentialsFromFlags(storage):  # pylint: disable=unused-a
         'service_account_private_key_file flag to be set.')
 
   return oauth2client.client.SignedJwtAssertionCredentials(
-      FLAGS.service_account, key, _GetClientScopeFromFlags(),
+      FLAGS.service_account, key, client_scope,
       private_key_password=FLAGS.service_account_private_key_password,
       user_agent=_CLIENT_USER_AGENT)
 
@@ -245,7 +250,9 @@ def _GetCredentialsFromOAuthFlow(storage):
     print 'Running in headless mode, exiting.'
     sys.exit(1)
   client_info = _CLIENT_INFO.copy()
-  client_info['scope'] = list(_GetClientScopeFromFlags())
+  if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
+    client_info['scope'] = list(client_info['scope'])
+    client_info['scope'].append(_GDRIVE_SCOPE)
   while True:
     # If authorization fails, we want to retry, rather than let this
     # cascade up and get caught elsewhere. If users want out of the
@@ -289,13 +296,12 @@ def _GetApplicationDefaultCredentialFromFile(filename):
         token_uri=oauth2client.client.GOOGLE_TOKEN_URI,
         user_agent=_CLIENT_USER_AGENT)
   else:  # Service account
-    client_scope = _GetClientScopeFromFlags()
     return oauth2client.service_account._ServiceAccountCredentials(  # pylint: disable=protected-access
         service_account_id=credentials['client_id'],
         service_account_email=credentials['client_email'],
         private_key_id=credentials['private_key_id'],
         private_key_pkcs8_text=credentials['private_key'],
-        scopes=client_scope,
+        scopes=[_CLIENT_SCOPE],
         user_agent=_CLIENT_USER_AGENT)
 
 
@@ -331,14 +337,6 @@ oauth2client.service_account._ServiceAccountCredentials.to_json = (
 oauth2client.service_account._ServiceAccountCredentials.from_json = (
     _ServiceAccountCredentialsFromJson)
 # pylint: enable=protected-access
-
-
-def _GetClientScopeFromFlags():
-  """Returns auth scopes based on user supplied flags."""
-  client_scope = [_CLIENT_SCOPE]
-  if FLAGS.enable_gdrive is None or FLAGS.enable_gdrive:
-    client_scope.append(_GDRIVE_SCOPE)
-  return client_scope
 
 
 def _GetCredentialsFromFlags():
@@ -791,15 +789,13 @@ class NewCmd(appcommands.Cmd):
     if not self._new_style:
       return super(NewCmd, self).Run(argv)
 
-    original_values = {name: self._command_flags[name].value
-                       for name in self._command_flags}
+    original_values = self._command_flags.FlagValuesDict()
     try:
       args = self._command_flags(argv)[1:]
-      for flag_name in self._command_flags:
-        value = self._command_flags[flag_name].value
-        setattr(self, flag_name, value)
-        if value == original_values[flag_name]:
-          original_values.pop(flag_name)
+      for flag, value in self._command_flags.FlagValuesDict().iteritems():
+        setattr(self, flag, value)
+        if value == original_values[flag]:
+          original_values.pop(flag)
       new_args = []
       for argname in self._full_arg_list[:self._min_args]:
         flag = self._GetFlag(argname)
@@ -844,7 +840,7 @@ class NewCmd(appcommands.Cmd):
     return self.Run([self._command_name] + args)
 
   def _HandleError(self, e):
-    message = bigquery_client.EncodeForPrinting(e)
+    message = e
     if isinstance(e, bigquery_client.BigqueryClientConfigurationError):
       message += ' Try running "bq init".'
     print 'Exception raised in %s operation: %s' % (self._command_name, message)
@@ -921,16 +917,11 @@ class BigqueryCmd(NewCmd):
     response = []
     retcode = 1
 
-    # pragma pylint: disable=line-too-long
     contact_us_msg = (
-        'Please file a bug report in our '
-        'public '
-        'issue tracker:\n'
+        'Please file a bug report in our public issue tracker:\n'
         '  https://code.google.com/p/google-bigquery/issues/list\n'
-        'Please include a brief description of '
-        'the steps that led to this issue, as well as '
-        'any rows that can be made public from '
-        'the following information: \n\n')
+        'Please include a brief description of the steps that led to this '
+        'issue, as well as the following information: \n\n')
     error_details = (
         '========================================\n'
         '== Platform ==\n'
@@ -1345,11 +1336,6 @@ class _Query(BigqueryCmd):
         'destination_table', '',
         'Name of destination table for query results.',
         flag_values=fv)
-    flags.DEFINE_string(
-        'destination_schema', '',
-        'Schema for the destination table. Either a filename or '
-        'a comma-separated list of fields in the form name[:type].',
-        flag_values=fv)
     flags.DEFINE_integer(
         'start_row', 0,
         'First row to return in the result.',
@@ -1376,7 +1362,7 @@ class _Query(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'allow_large_results', None,
-        'Enables larger destination table sizes for legacy SQL queries.',
+        'Enables larger destination table sizes.',
         flag_values=fv)
     flags.DEFINE_boolean(
         'dry_run', None,
@@ -1399,8 +1385,7 @@ class _Query(BigqueryCmd):
         flag_values=fv)
     flags.DEFINE_boolean(
         'flatten_results', None,
-        'Whether to flatten nested and repeated fields in the result schema '
-        'for legacy SQL queries. '
+        'Whether to flatten nested and repeated fields in the result schema. '
         'If not set, the default behavior is to flatten.',
         flag_values=fv)
     flags.DEFINE_multistring(
@@ -1503,9 +1488,6 @@ class _Query(BigqueryCmd):
       query = sys.stdin.read()
     client = Client.Get()
     kwds['use_legacy_sql'] = self.use_legacy_sql
-    if self.destination_schema and not self.destination_table:
-      raise app.UsageError(
-          'destination_schema can only be used with destination_table.')
     if self.rpc:
       if self.allow_large_results:
         raise app.UsageError(
@@ -1524,12 +1506,9 @@ class _Query(BigqueryCmd):
             'flatten_results cannot be specified in rpc mode.')
       kwds['max_results'] = self.max_rows
       fields, rows, execution = client.RunQueryRpc(query, **kwds)
-      if self.dry_run:
-        _PrintDryRunInfo(execution)
-      else:
-        Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
-        # If we are here, the job succeeded, but print warnings if any.
-        _PrintJobMessages(execution)
+      Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
+      # If we are here, the job succeeded, but print warnings if any.
+      _PrintJobMessages(execution)
     else:
       if self.destination_table and self.append_table:
         kwds['write_disposition'] = 'WRITE_APPEND'
@@ -1556,10 +1535,6 @@ class _Query(BigqueryCmd):
         Factory.ClientTablePrinter.GetTablePrinter().PrintTable(fields, rows)
         # If we are here, the job succeeded, but print warnings if any.
         _PrintJobMessages(client.FormatJobInfo(job))
-    if self.destination_schema:
-      client.UpdateTable(
-          client.GetTableReference(self.destination_table),
-          BigqueryClient.ReadSchema(self.destination_schema))
 
 
 def _GetExternalDataConfig(file_path_or_simple_spec):
@@ -2103,10 +2078,8 @@ class _Copy(BigqueryCmd):
       _PrintJobMessages(client.FormatJobInfo(job))
 
 
-def _ParseTimePartitioning(
-    partitioning_type=None,
-    partitioning_expiration=None,
-):
+def _ParseTimePartitioning(partitioning_type=None,
+                           partitioning_expiration=None): # pylint: disable=line-too-long
   """Parses time partitioning from the arguments.
 
   Args:
@@ -2209,7 +2182,7 @@ class _Make(BigqueryCmd):
         'time_partitioning_type',
         None,
         'Enables time based partitioning on the table and set the type. The '
-        'only type accepted is DAY, which will generate one partition per day.',
+        'only type accepted is DAY, which will generate one partition per day',
         flag_values=fv)
     flags.DEFINE_integer(
         'time_partitioning_expiration',
@@ -2218,10 +2191,6 @@ class _Make(BigqueryCmd):
         'seconds for which to keep the storage for a partition. The storage '
         'will have an expiration time of its creation time plus this value. '
         'A negative number means no expiration.',
-        flag_values=fv)
-    flags.DEFINE_multistring(
-        'label', None,
-        'A label to set on the table. The format is "key:value"',
         flag_values=fv)
     self._ProcessCommandRc(fv)
 
@@ -2301,9 +2270,6 @@ class _Make(BigqueryCmd):
       else:
         schema = None
       expiration = None
-      labels = None
-      if self.label is not None:
-        labels = _ParseLabels(self.label)
       if self.data_location:
         raise app.UsageError('Cannot specify data location for a table.')
       if self.default_table_expiration:
@@ -2331,7 +2297,6 @@ class _Make(BigqueryCmd):
                          view_udf_resources=view_udf_resources,
                          use_legacy_sql=self.use_legacy_sql,
                          external_data_config=external_data_config,
-                         labels=labels,
                          time_partitioning=time_partitioning)
       print "%s '%s' successfully created." % (object_name, reference,)
 
@@ -2409,7 +2374,7 @@ class _Update(BigqueryCmd):
         'time_partitioning_type',
         None,
         'Enables time based partitioning on the table and set the type. The '
-        'only type accepted is DAY, which will generate one partition per day.',
+        'only type accepted is DAY, which will generate one partition per day',
         flag_values=fv)
     flags.DEFINE_integer(
         'time_partitioning_expiration',
@@ -2475,15 +2440,14 @@ class _Update(BigqueryCmd):
       default_table_exp_ms = None
       if self.default_table_expiration is not None:
         default_table_exp_ms = self.default_table_expiration * 1000
-      _UpdateDataset(
-          client,
-          reference,
-          self.description,
-          self.source,
-          default_table_exp_ms,
-          labels_to_set,
-          label_keys_to_remove,
-      )
+      _UpdateDataset(client,
+                     reference,
+                     self.description,
+                     self.source,
+                     default_table_exp_ms,
+                     labels_to_set,
+                     label_keys_to_remove,
+                     )
       print "Dataset '%s' successfully updated." % (reference,)
     elif isinstance(reference, TableReference):
       object_name = 'Table'
@@ -2530,22 +2494,19 @@ class _Update(BigqueryCmd):
                          view_udf_resources=view_udf_resources,
                          use_legacy_sql=self.use_legacy_sql,
                          external_data_config=external_data_config,
-                         labels_to_set=labels_to_set,
-                         label_keys_to_remove=label_keys_to_remove,
                          time_partitioning=time_partitioning)
 
       print "%s '%s' successfully updated." % (object_name, reference,)
 
 
-def _UpdateDataset(
-    client,
-    reference,
-    description,
-    source,
-    default_table_expiration_ms,
-    labels_to_set,
-    label_keys_to_remove,
-):
+def _UpdateDataset(client,
+                   reference,
+                   description,
+                   source,
+                   default_table_expiration_ms,
+                   labels_to_set,
+                   label_keys_to_remove,
+                   ):
   """Updates a dataset.
 
   Reads JSON file if specified and loads updated values, before calling bigquery
@@ -2581,14 +2542,13 @@ def _UpdateDataset(
       except ValueError as e:
         raise app.UsageError('Error decoding JSON schema from file %s: %s'
                              % (source, e))
-  client.UpdateDataset(
-      reference,
-      description=description,
-      acl=acl,
-      default_table_expiration_ms=default_table_expiration_ms,
-      labels_to_set=labels_to_set,
-      label_keys_to_remove=label_keys_to_remove,
-  )
+  client.UpdateDataset(reference,
+                       description=description,
+                       acl=acl,
+                       default_table_expiration_ms=default_table_expiration_ms,
+                       labels_to_set=labels_to_set,
+                       label_keys_to_remove=label_keys_to_remove,
+                       )
 
 
 class _Show(BigqueryCmd):
@@ -2622,7 +2582,6 @@ class _Show(BigqueryCmd):
     # pylint: disable=g-doc-exception
     client = Client.Get()
     custom_format = 'show'
-    object_info = None
     if self.j:
       reference = client.GetJobReference(identifier)
     elif self.d:
@@ -2635,8 +2594,7 @@ class _Show(BigqueryCmd):
     if reference is None:
       raise app.UsageError('Must provide an identifier for show.')
 
-    if object_info is None:
-      object_info = client.GetObjectInfo(reference)
+    object_info = client.GetObjectInfo(reference)
     _PrintObjectInfo(object_info, reference, custom_format=custom_format)
 
 
@@ -2692,9 +2650,8 @@ def _PrintObjectInfo(object_info, reference, custom_format):
     BigqueryClient.ConfigureFormatter(formatter, type(reference),
                                       print_format=custom_format,
                                       object_info=object_info)
-    object_info = BigqueryClient.FormatInfoByType(object_info, type(reference))
-    if object_info:
-      formatter.AddDict(object_info)
+    object_info = BigqueryClient.FormatInfoByKind(object_info)
+    formatter.AddDict(object_info)
     print '%s %s\n' % (reference.typename.capitalize(), reference)
     formatter.Print()
     print
@@ -2705,8 +2662,6 @@ def _PrintObjectInfo(object_info, reference, custom_format):
     formatter.AddColumns(object_info.keys())
     formatter.AddDict(object_info)
     formatter.Print()
-
-
 
 
 class _Cancel(BigqueryCmd):
@@ -2774,12 +2729,6 @@ class _Head(BigqueryCmd):
         'max_rows', 100,
         'The number of rows to print when showing table data.',
         short_name='n', flag_values=fv)
-    flags.DEFINE_string(
-        'selected_fields', None,
-        'A subset of fields (including nested fields) to return when showing '
-        'table data. If not specified, full row will be retrieved. '
-        'For example, "-c:a,b".',
-        short_name='c', flag_values=fv)
     self._ProcessCommandRc(fv)
 
   def RunWithArgs(self, identifier=''):
@@ -2808,8 +2757,7 @@ class _Head(BigqueryCmd):
     elif isinstance(reference, TableReference):
       fields, rows = client.ReadSchemaAndRows(dict(reference),
                                               start_row=self.s,
-                                              max_rows=self.n,
-                                              selected_fields=self.c)
+                                              max_rows=self.n)
     else:
       raise app.UsageError("Invalid identifier '%s' for head." % (identifier,))
 
@@ -3471,9 +3419,7 @@ def main(unused_argv):
   # bq <global flags> <command> <global and local flags> <command args>,
   # only "<global flags>" will parse before main, not "<global and local flags>"
   try:
-    # Some versions of oauthclient specify this flag.
-    if hasattr(FLAGS, 'auth_local_webserver'):
-      FLAGS.auth_local_webserver = False
+    FLAGS.auth_local_webserver = False
     _ValidateGlobalFlags()
 
     bq_commands = {
@@ -3530,9 +3476,9 @@ def run_main():
 
   # Put the flags for this module somewhere the flags module will look
   # for them.
+  # pylint: disable=protected-access
   new_name = sys.argv[0]
   sys.modules[new_name] = sys.modules['__main__']
-  # pylint: disable=protected-access
   for flag in FLAGS.FlagsByModuleDict().get(__name__, []):
     FLAGS._RegisterFlagByModule(new_name, flag)
     for key_flag in FLAGS.KeyFlagsByModuleDict().get(__name__, []):

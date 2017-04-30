@@ -52,7 +52,6 @@ class Bucket(_messages.Message):
     id: The ID of the bucket.
     kind: The kind of item this is. For buckets, this is always
       storage#bucket.
-    labels: User-provided labels, in key/value pairs.
     lifecycle: The bucket's lifecycle configuration. See lifecycle management
       for more information.
     location: The location of the bucket. Object data for objects in the
@@ -66,13 +65,10 @@ class Bucket(_messages.Message):
       group.
     projectNumber: The project number of the project the bucket belongs to.
     selfLink: The URI of this bucket.
-    storageClass: The bucket's default storage class, used whenever no
-      storageClass is specified for a newly-created object. This defines how
-      objects in the bucket are stored and determines the SLA and the cost of
-      storage. Values include MULTI_REGIONAL, REGIONAL, STANDARD, NEARLINE,
-      COLDLINE, and DURABLE_REDUCED_AVAILABILITY. If this value is not
-      specified when the bucket is created, it will default to STANDARD. For
-      more information, see storage classes.
+    storageClass: The bucket's storage class. This defines how objects in the
+      bucket are stored and determines the SLA and the cost of storage. Values
+      include STANDARD, NEARLINE and DURABLE_REDUCED_AVAILABILITY. Defaults to
+      STANDARD. For more information, see storage classes.
     timeCreated: The creation time of the bucket in RFC 3339 format.
     updated: The modification time of the bucket in RFC 3339 format.
     versioning: The bucket's versioning configuration.
@@ -100,30 +96,6 @@ class Bucket(_messages.Message):
     method = _messages.StringField(2, repeated=True)
     origin = _messages.StringField(3, repeated=True)
     responseHeader = _messages.StringField(4, repeated=True)
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class LabelsValue(_messages.Message):
-    """User-provided labels, in key/value pairs.
-
-    Messages:
-      AdditionalProperty: An additional property for a LabelsValue object.
-
-    Fields:
-      additionalProperties: An individual label entry.
-    """
-
-    class AdditionalProperty(_messages.Message):
-      """An additional property for a LabelsValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
 
   class LifecycleValue(_messages.Message):
     """The bucket's lifecycle configuration. See lifecycle management for more
@@ -253,20 +225,19 @@ class Bucket(_messages.Message):
   etag = _messages.StringField(4)
   id = _messages.StringField(5)
   kind = _messages.StringField(6, default=u'storage#bucket')
-  labels = _messages.MessageField('LabelsValue', 7)
-  lifecycle = _messages.MessageField('LifecycleValue', 8)
-  location = _messages.StringField(9)
-  logging = _messages.MessageField('LoggingValue', 10)
-  metageneration = _messages.IntegerField(11)
-  name = _messages.StringField(12)
-  owner = _messages.MessageField('OwnerValue', 13)
-  projectNumber = _messages.IntegerField(14, variant=_messages.Variant.UINT64)
-  selfLink = _messages.StringField(15)
-  storageClass = _messages.StringField(16)
-  timeCreated = _message_types.DateTimeField(17)
-  updated = _message_types.DateTimeField(18)
-  versioning = _messages.MessageField('VersioningValue', 19)
-  website = _messages.MessageField('WebsiteValue', 20)
+  lifecycle = _messages.MessageField('LifecycleValue', 7)
+  location = _messages.StringField(8)
+  logging = _messages.MessageField('LoggingValue', 9)
+  metageneration = _messages.IntegerField(10)
+  name = _messages.StringField(11)
+  owner = _messages.MessageField('OwnerValue', 12)
+  projectNumber = _messages.IntegerField(13, variant=_messages.Variant.UINT64)
+  selfLink = _messages.StringField(14)
+  storageClass = _messages.StringField(15)
+  timeCreated = _message_types.DateTimeField(16)
+  updated = _message_types.DateTimeField(17)
+  versioning = _messages.MessageField('VersioningValue', 18)
+  website = _messages.MessageField('WebsiteValue', 19)
 
 
 class BucketAccessControl(_messages.Message):
@@ -460,83 +431,6 @@ class ComposeRequest(_messages.Message):
   sourceObjects = _messages.MessageField('SourceObjectsValueListEntry', 3, repeated=True)
 
 
-class Notification(_messages.Message):
-  """A subscription to receive Google PubSub notifications.
-
-  Messages:
-    CustomAttributesValue: An optional list of additional attributes to attach
-      to each Cloud PubSub message published for this notification
-      subscription.
-
-  Fields:
-    custom_attributes: An optional list of additional attributes to attach to
-      each Cloud PubSub message published for this notification subscription.
-    etag: HTTP 1.1 Entity tag for this subscription notification.
-    event_types: If present, only send notifications about listed event types.
-      If empty, sent notifications for all event types.
-    id: The ID of the notification.
-    kind: The kind of item this is. For notifications, this is always
-      storage#notification.
-    object_name_prefix: If present, only apply this notification configuration
-      to object names that begin with this prefix.
-    payload_format: The desired payload format for incoming notifications.
-    selfLink: The canonical URL of this notification.
-    topic: The Cloud PubSub topic to which this subscription publishes.
-      Formatted as: '//pubsub.googleapis.com/projects/{project-
-      identifier}/topics/{my-topic}'
-  """
-
-  @encoding.MapUnrecognizedFields('additionalProperties')
-  class CustomAttributesValue(_messages.Message):
-    """An optional list of additional attributes to attach to each Cloud
-    PubSub message published for this notification subscription.
-
-    Messages:
-      AdditionalProperty: An additional property for a CustomAttributesValue
-        object.
-
-    Fields:
-      additionalProperties: Additional properties of type
-        CustomAttributesValue
-    """
-
-    class AdditionalProperty(_messages.Message):
-      """An additional property for a CustomAttributesValue object.
-
-      Fields:
-        key: Name of the additional property.
-        value: A string attribute.
-      """
-
-      key = _messages.StringField(1)
-      value = _messages.StringField(2)
-
-    additionalProperties = _messages.MessageField('AdditionalProperty', 1, repeated=True)
-
-  custom_attributes = _messages.MessageField('CustomAttributesValue', 1)
-  etag = _messages.StringField(2)
-  event_types = _messages.StringField(3, repeated=True)
-  id = _messages.StringField(4)
-  kind = _messages.StringField(5, default=u'storage#notification')
-  object_name_prefix = _messages.StringField(6)
-  payload_format = _messages.StringField(7, default=u'JSON_API_V1')
-  selfLink = _messages.StringField(8)
-  topic = _messages.StringField(9)
-
-
-class Notifications(_messages.Message):
-  """A list of notification subscriptions.
-
-  Fields:
-    items: The list of items.
-    kind: The kind of item this is. For lists of notifications, this is always
-      storage#notifications.
-  """
-
-  items = _messages.MessageField('Notification', 1, repeated=True)
-  kind = _messages.StringField(2, default=u'storage#notifications')
-
-
 class Object(_messages.Message):
   """An object.
 
@@ -588,9 +482,6 @@ class Object(_messages.Message):
     timeCreated: The creation time of the object in RFC 3339 format.
     timeDeleted: The deletion time of the object in RFC 3339 format. Will be
       returned if and only if this version of the object has been deleted.
-    timeStorageClassUpdated: The time at which the object's storage class was
-      last changed. When the object is initially created, it will be set to
-      timeCreated.
     updated: The modification time of the object metadata in RFC 3339 format.
   """
 
@@ -667,8 +558,7 @@ class Object(_messages.Message):
   storageClass = _messages.StringField(23)
   timeCreated = _message_types.DateTimeField(24)
   timeDeleted = _message_types.DateTimeField(25)
-  timeStorageClassUpdated = _message_types.DateTimeField(26)
-  updated = _message_types.DateTimeField(27)
+  updated = _message_types.DateTimeField(26)
 
 
 class ObjectAccessControl(_messages.Message):
@@ -860,19 +750,6 @@ class RewriteResponse(_messages.Message):
   resource = _messages.MessageField('Object', 4)
   rewriteToken = _messages.StringField(5)
   totalBytesRewritten = _messages.IntegerField(6, variant=_messages.Variant.UINT64)
-
-
-class ServiceAccount(_messages.Message):
-  """A subscription to receive Google PubSub notifications.
-
-  Fields:
-    email_address: The ID of the notification.
-    kind: The kind of item this is. For notifications, this is always
-      storage#notification.
-  """
-
-  email_address = _messages.StringField(1)
-  kind = _messages.StringField(2, default=u'storage#serviceAccount')
 
 
 class StandardQueryParameters(_messages.Message):
@@ -1385,68 +1262,6 @@ class StorageDefaultObjectAccessControlsListRequest(_messages.Message):
   bucket = _messages.StringField(1, required=True)
   ifMetagenerationMatch = _messages.IntegerField(2)
   ifMetagenerationNotMatch = _messages.IntegerField(3)
-
-
-class StorageNotificationsDeleteRequest(_messages.Message):
-  """A StorageNotificationsDeleteRequest object.
-
-  Fields:
-    bucket: The parent bucket of the notification.
-    notification: ID of the notification to delete.
-    requesterPaysBillingProjectId: The project number to be billed for this
-      request, for Requester Pays buckets.
-  """
-
-  bucket = _messages.StringField(1, required=True)
-  notification = _messages.StringField(2, required=True)
-  requesterPaysBillingProjectId = _messages.StringField(3)
-
-
-class StorageNotificationsDeleteResponse(_messages.Message):
-  """An empty StorageNotificationsDelete response."""
-
-
-class StorageNotificationsGetRequest(_messages.Message):
-  """A StorageNotificationsGetRequest object.
-
-  Fields:
-    bucket: The parent bucket of the notification.
-    notification: Notification ID
-    requesterPaysBillingProjectId: The project number to be billed for this
-      request, for Requester Pays buckets.
-  """
-
-  bucket = _messages.StringField(1, required=True)
-  notification = _messages.StringField(2, required=True)
-  requesterPaysBillingProjectId = _messages.StringField(3)
-
-
-class StorageNotificationsInsertRequest(_messages.Message):
-  """A StorageNotificationsInsertRequest object.
-
-  Fields:
-    bucket: The parent bucket of the notification.
-    notification: A Notification resource to be passed as the request body.
-    requesterPaysBillingProjectId: The project number to be billed for this
-      request, for Requester Pays buckets.
-  """
-
-  bucket = _messages.StringField(1, required=True)
-  notification = _messages.MessageField('Notification', 2)
-  requesterPaysBillingProjectId = _messages.StringField(3)
-
-
-class StorageNotificationsListRequest(_messages.Message):
-  """A StorageNotificationsListRequest object.
-
-  Fields:
-    bucket: Name of a GCS bucket.
-    requesterPaysBillingProjectId: The project number to be billed for this
-      request, for Requester Pays buckets.
-  """
-
-  bucket = _messages.StringField(1, required=True)
-  requesterPaysBillingProjectId = _messages.StringField(2)
 
 
 class StorageObjectAccessControlsDeleteRequest(_messages.Message):
@@ -2303,15 +2118,3 @@ class TestIamPermissionsResponse(_messages.Message):
 
   kind = _messages.StringField(1, default=u'storage#testIamPermissionsResponse')
   permissions = _messages.StringField(2, repeated=True)
-
-
-class StorageProjectsServiceAccountGetRequest(_messages.Message):
-  """A StorageProjectsServiceAccountGetRequest object.
-
-  Fields:
-    projectId: Project ID
-  """
-
-  projectId = _messages.StringField(1, required=True)
-
-

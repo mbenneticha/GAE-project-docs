@@ -30,7 +30,9 @@ while 1:
         
     print(cert.prettyPrint())
 
-    assert encoder.encode(cert) == substrate, 'cert recode fails'
+    assert encoder.encode(cert, defMode=False) == substrate or \
+           encoder.encode(cert, defMode=True) == substrate, \
+           'cert recode fails'
         
     certCnt = certCnt + 1
     
